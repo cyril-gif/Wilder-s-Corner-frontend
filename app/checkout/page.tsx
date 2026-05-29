@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,6 +13,7 @@ import useCartStore from '@/store/cartStore';
 import useAuthStore from '@/store/authStore';
 import { createOrder } from '@/lib/api';
 
+// Define the schema with all required fields
 const addressSchema = z.object({
   fullName: z.string().min(2, 'Full name required'),
   phone: z.string().min(10, 'Valid phone required'),
@@ -26,8 +27,9 @@ const addressSchema = z.object({
 
 type AddressForm = z.infer<typeof addressSchema>;
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { items, getSubtotal, clearCart } = useCartStore();
   const { user } = useAuthStore();
   const [step, setStep] = useState(1);
@@ -44,13 +46,16 @@ export default function CheckoutPage() {
   const shipping = subtotal > 5000 ? 0 : 500;
   const total = subtotal + shipping;
 
+  // Redirect if cart is empty
   if (items.length === 0) {
     router.push('/cart');
     return null;
   }
 
+  // Redirect if not logged in
   if (!user) {
-    router.push('/auth/login?redirect=/checkout');
+    const redirectUrl = encodeURIComponent('/checkout');
+    router.push(`/auth/login?redirect=${redirectUrl}`);
     return null;
   }
 
@@ -107,29 +112,44 @@ export default function CheckoutPage() {
                   <div>
                     <Label>Full Name</Label>
                     <Input {...register('fullName')} />
-                    {errors.fullName && <p className="text-red-500 text-xs">{errors.fullName.message}</p>}
+                    {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
                   </div>
                   <div>
                     <Label>Phone</Label>
                     <Input {...register('phone')} />
-                    {errors.phone && <p className="text-red-500 text-xs">{errors.phone.message}</p>}
+                    {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
                   </div>
                 </div>
                 <div>
                   <Label>Address Line 1</Label>
                   <Input {...register('addressLine1')} />
-                  {errors.addressLine1 && <p className="text-red-500 text-xs">{errors.addressLine1.message}</p>}
+                  {errors.addressLine1 && <p className="text-red-500 text-xs mt-1">{errors.addressLine1.message}</p>}
                 </div>
                 <div>
                   <Label>Address Line 2 (Optional)</Label>
                   <Input {...register('addressLine2')} />
                 </div>
                 <div className="grid md:grid-cols-3 gap-4">
-                  <div><Label>City</Label><Input {...register('city')} /></div>
-                  <div><Label>State</Label><Input {...register('state')} /></div>
-                  <div><Label>Postal Code</Label><Input {...register('postalCode')} /></div>
+                  <div>
+                    <Label>City</Label>
+                    <Input {...register('city')} />
+                    {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city.message}</p>}
+                  </div>
+                  <div>
+                    <Label>State</Label>
+                    <Input {...register('state')} />
+                    {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state.message}</p>}
+                  </div>
+                  <div>
+                    <Label>Postal Code</Label>
+                    <Input {...register('postalCode')} />
+                    {errors.postalCode && <p className="text-red-500 text-xs mt-1">{errors.postalCode.message}</p>}
+                  </div>
                 </div>
-                <div><Label>Country</Label><Input {...register('country')} readOnly className="bg-gray-100" /></div>
+                <div>
+                  <Label>Country</Label>
+                  <Input {...register('country')} readOnly className="bg-gray-100" />
+                </div>
                 <Button type="submit" className="bg-primary">Continue to Payment</Button>
               </form>
             </div>
@@ -141,11 +161,11 @@ export default function CheckoutPage() {
               <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-2">
                 <div className="flex items-center space-x-2 border p-3 rounded">
                   <RadioGroupItem value="cash_on_delivery" id="cod" />
-                  <Label htmlFor="cod" className="flex-1">Cash on Delivery</Label>
+                  <Label htmlFor="cod" className="flex-1 cursor-pointer">Cash on Delivery</Label>
                 </div>
                 <div className="flex items-center space-x-2 border p-3 rounded opacity-50">
                   <RadioGroupItem value="card" id="card" disabled />
-                  <Label htmlFor="card" className="flex-1">Card Payment (Coming Soon)</Label>
+                  <Label htmlFor="card" className="flex-1 cursor-not-allowed">Card Payment (Coming Soon)</Label>
                 </div>
               </RadioGroup>
               <div className="flex justify-between mt-6">
@@ -166,17 +186,26 @@ export default function CheckoutPage() {
                   {address?.city}, {address?.state} {address?.postalCode}<br />
                   Phone: {address?.phone}
                 </p>
-                <button onClick={() => setStep(1)} className="text-primary text-sm">Edit</button>
+                <button onClick={() => setStep(1)} className="text-primary text-sm hover:underline">Edit</button>
               </div>
               <div className="space-y-3 mb-4">
                 <h3 className="font-medium">Payment:</h3>
                 <p className="text-sm">{paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : 'Card'}</p>
-                <button onClick={() => setStep(2)} className="text-primary text-sm">Edit</button>
+                <button onClick={() => setStep(2)} className="text-primary text-sm hover:underline">Edit</button>
               </div>
               <div className="border-t pt-4 mt-4">
-                <div className="flex justify-between mb-2"><span>Subtotal</span><span>₦{subtotal.toLocaleString()}</span></div>
-                <div className="flex justify-between mb-2"><span>Shipping</span><span>{shipping === 0 ? 'Free' : `₦${shipping.toLocaleString()}`}</span></div>
-                <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t"><span>Total</span><span>₦{total.toLocaleString()}</span></div>
+                <div className="flex justify-between mb-2">
+                  <span>Subtotal</span>
+                  <span>₦{subtotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between mb-2">
+                  <span>Shipping</span>
+                  <span>{shipping === 0 ? 'Free' : `₦${shipping.toLocaleString()}`}</span>
+                </div>
+                <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t">
+                  <span>Total</span>
+                  <span>₦{total.toLocaleString()}</span>
+                </div>
               </div>
               <Button onClick={placeOrder} disabled={isSubmitting} className="w-full mt-4 bg-primary">
                 {isSubmitting ? 'Placing Order...' : 'Place Order'}
@@ -201,5 +230,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto px-4 py-8">Loading checkout...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }
