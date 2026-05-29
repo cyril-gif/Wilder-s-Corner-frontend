@@ -7,14 +7,14 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-interface Product {
+interface ProductType {
   _id: string;
   name: string;
   description: string;
   price: number;
-  discountPrice?: number;
-  images?: string[];
-  slug?: string;
+  discountPrice: number | null;
+  images: string[];
+  slug: string;
 }
 
 export default function HeroBanner() {
@@ -24,7 +24,7 @@ export default function HeroBanner() {
   });
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const products: Product[] = data?.products || [];
+  const products: ProductType[] = data?.products || [];
   const itemsPerPage = 2;
   const totalSlides = Math.ceil(products.length / itemsPerPage);
 
@@ -52,7 +52,7 @@ export default function HeroBanner() {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        {[1, 2].map((i) => (
+        {[1, 2].map((i: number) => (
           <div key={i} className="h-64 bg-gray-200 rounded-lg animate-pulse"></div>
         ))}
       </div>
@@ -73,7 +73,7 @@ export default function HeroBanner() {
   return (
     <div className="relative mb-8 group">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {visibleProducts.map((product: Product) => {
+        {visibleProducts.map((product: ProductType) => {
           const price = product.discountPrice || product.price;
           const originalPrice = product.discountPrice ? product.price : null;
           const discountPercent = originalPrice 
@@ -141,7 +141,7 @@ export default function HeroBanner() {
 
       {totalSlides > 1 && (
         <div className="flex justify-center gap-2 mt-4">
-          {Array.from({ length: totalSlides }).map((_, idx) => (
+          {Array.from({ length: totalSlides }).map((_: any, idx: number) => (
             <button
               key={idx}
               onClick={() => setCurrentIndex(idx)}

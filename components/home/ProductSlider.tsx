@@ -1,4 +1,4 @@
-'use client';
+/* 'use client';
 
 import { useQuery } from '@tanstack/react-query';
 import { fetchProducts } from '@/lib/api';
@@ -80,7 +80,7 @@ export default function ProductSlider() {
         </div>
       </Link>
 
-      {/* Navigation Buttons */}
+      {/* 
       <button
         onClick={goToPrevious}
         className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition"
@@ -94,7 +94,7 @@ export default function ProductSlider() {
         <ChevronRight className="h-5 w-5" />
       </button>
 
-      {/* Dots Indicator */}
+      {/* Dots Indicato
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
         {products.slice(0, 5).map((_, idx) => (
           <button
@@ -108,5 +108,5 @@ export default function ProductSlider() {
       </div>
     </div>
   );
-}
+} */
 
