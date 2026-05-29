@@ -6,13 +6,35 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Image from 'next/image';
+
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  discountPrice?: number;
+  stock: number;
+  category: { _id: string; name: string } | string;
+  brand?: string;
+  images?: string[];
+}
+
+interface ProductForm {
+  name: string;
+  description: string;
+  price: string;
+  discountPrice: string;
+  stock: string;
+  category: string;
+  brand: string;
+  images: File[];
+}
 
 export default function AdminProducts() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({
+  const [editing, setEditing] = useState<string | null>(null);
+  const [form, setForm] = useState<ProductForm>({
     name: '',
     description: '',
     price: '',
@@ -27,7 +49,7 @@ export default function AdminProducts() {
     fetchProducts();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (): Promise<void> => {
     try {
       const res = await axios.get('/products?limit=100');
       setProducts(res.data.data.products);
@@ -38,7 +60,7 @@ export default function AdminProducts() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     const formData = new FormData();
     Object.keys(form).forEach(key => {
@@ -47,7 +69,7 @@ export default function AdminProducts() {
           formData.append('images', form.images[i]);
         }
       } else {
-        formData.append(key, form[key]);
+        formData.append(key, form[key as keyof ProductForm] as string);
       }
     });
 
@@ -68,12 +90,12 @@ export default function AdminProducts() {
     }
   };
 
-  const resetForm = () => {
+  const resetForm = (): void => {
     setEditing(null);
     setForm({ name: '', description: '', price: '', discountPrice: '', stock: '', category: '', brand: '', images: [] });
   };
 
-  const deleteProduct = async (id) => {
+  const deleteProduct = async (id: string): Promise<void> => {
     if (confirm('Delete this product?')) {
       await axios.delete(`/admin/products/${id}`);
       fetchProducts();
@@ -94,39 +116,80 @@ export default function AdminProducts() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label>Name</Label>
-                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+                <Input 
+                  value={form.name} 
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, name: e.target.value})} 
+                  required 
+                />
               </div>
               <div>
                 <Label>Description</Label>
-                <Input value={form.description} onChange={e => setForm({...form, description: e.target.value})} required />
+                <Input 
+                  value={form.description} 
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, description: e.target.value})} 
+                  required 
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Price</Label>
-                  <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} required />
+                  <Input 
+                    type="number" 
+                    value={form.price} 
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, price: e.target.value})} 
+                    required 
+                  />
                 </div>
                 <div>
                   <Label>Discount Price</Label>
-                  <Input type="number" value={form.discountPrice} onChange={e => setForm({...form, discountPrice: e.target.value})} />
+                  <Input 
+                    type="number" 
+                    value={form.discountPrice} 
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, discountPrice: e.target.value})} 
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Stock</Label>
-                  <Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} required />
+                  <Input 
+                    type="number" 
+                    value={form.stock} 
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, stock: e.target.value})} 
+                    required 
+                  />
                 </div>
                 <div>
                   <Label>Brand</Label>
-                  <Input value={form.brand} onChange={e => setForm({...form, brand: e.target.value})} />
+                  <Input 
+                    value={form.brand} 
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, brand: e.target.value})} 
+                  />
                 </div>
               </div>
               <div>
                 <Label>Category ID</Label>
-                <Input value={form.category} onChange={e => setForm({...form, category: e.target.value})} required placeholder="Enter category ID" />
+                <Input 
+                  value={form.category} 
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, category: e.target.value})} 
+                  required 
+                  placeholder="Enter category ID" 
+                />
               </div>
               <div>
                 <Label>Images</Label>
-                <Input type="file" multiple accept="image/*" onChange={e => setForm({...form, images: Array.from(e.target.files)})} />
+                <Input 
+                  type="file" 
+                  multiple 
+                  accept="image/*" 
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const files = Array.from(e.target.files || []);
+                    setForm({...form, images: files});
+                  }} 
+                />
+                {form.images.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">{form.images.length} image(s) selected</p>
+                )}
               </div>
               <div className="flex gap-2">
                 <Button type="submit" className="bg-primary">{editing ? 'Update' : 'Create'}</Button>
@@ -139,29 +202,41 @@ export default function AdminProducts() {
         <div>
           <h2 className="text-lg font-semibold mb-4">Existing Products</h2>
           <div className="space-y-2 max-h-[600px] overflow-y-auto">
-            {products.map((p: any) => (
+            {products.map((p: Product) => (
               <div key={p._id} className="flex justify-between items-center bg-white p-3 rounded shadow">
                 <div className="flex items-center gap-3">
-                  {p.images?.[0] && <img src={p.images[0]} alt={p.name} className="w-12 h-12 object-cover rounded" />}
+                  {p.images?.[0] && (
+                    <img 
+                      src={p.images[0]} 
+                      alt={p.name} 
+                      className="w-12 h-12 object-cover rounded" 
+                    />
+                  )}
                   <div>
                     <div className="font-medium">{p.name}</div>
                     <div className="text-sm">₦{p.price}</div>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => {
-                    setEditing(p._id);
-                    setForm({
-                      name: p.name,
-                      description: p.description,
-                      price: p.price,
-                      discountPrice: p.discountPrice || '',
-                      stock: p.stock,
-                      category: p.category?._id || p.category,
-                      brand: p.brand || '',
-                      images: []
-                    });
-                  }}>Edit</Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => {
+                      setEditing(p._id);
+                      setForm({
+                        name: p.name,
+                        description: p.description,
+                        price: p.price.toString(),
+                        discountPrice: p.discountPrice?.toString() || '',
+                        stock: p.stock.toString(),
+                        category: typeof p.category === 'object' ? p.category._id : p.category,
+                        brand: p.brand || '',
+                        images: []
+                      });
+                    }}
+                  >
+                    Edit
+                  </Button>
                   <Button size="sm" variant="destructive" onClick={() => deleteProduct(p._id)}>Delete</Button>
                 </div>
               </div>
