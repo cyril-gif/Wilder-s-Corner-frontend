@@ -16,10 +16,11 @@ export default function OrderDetailPage() {
   const { data: order, isLoading, error } = useQuery({
     queryKey: ['order', id],
     queryFn: () => fetchOrder(id as string),
+    retry: false,
   });
 
   if (isLoading) return <div className="container mx-auto px-4 py-8">Loading order details...</div>;
-  if (error || !order) return <div className="container mx-auto px-4 py-8">Order not found</div>;
+  if (error || !order) return <div className="container mx-auto px-4 py-8">Order not found. Please login.</div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -30,12 +31,11 @@ export default function OrderDetailPage() {
 
       <div className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
-          {/* Items */}
           <div className="bg-white rounded-lg shadow-card p-4">
             <h2 className="font-semibold mb-3 flex items-center gap-2"><Package className="h-4 w-4" /> Order Items</h2>
             <div className="space-y-3">
-              {order.orderItems.map((item: any) => (
-                <div key={item.product._id} className="flex gap-3 border-b pb-3">
+              {order.orderItems?.map((item: any, idx: number) => (
+                <div key={idx} className="flex gap-3 border-b pb-3">
                   <div className="h-16 w-16 bg-gray-100 rounded relative">
                     <Image src={item.image} alt={item.name} fill className="object-cover rounded" />
                   </div>
@@ -49,7 +49,6 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          {/* Timeline */}
           <div className="bg-white rounded-lg shadow-card p-4">
             <h2 className="font-semibold mb-3">Order Timeline</h2>
             <div className="relative pl-6 border-l-2 border-gray-200 ml-2 space-y-4">
@@ -76,23 +75,22 @@ export default function OrderDetailPage() {
           </div>
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-card p-4">
             <h2 className="font-semibold mb-2 flex items-center gap-2"><MapPin className="h-4 w-4" /> Shipping Address</h2>
             <p className="text-sm">
-              {order.shippingAddress.fullName}<br />
-              {order.shippingAddress.addressLine1}<br />
-              {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}<br />
-              Phone: {order.shippingAddress.phone}
+              {order.shippingAddress?.fullName}<br />
+              {order.shippingAddress?.addressLine1}<br />
+              {order.shippingAddress?.city}, {order.shippingAddress?.state} {order.shippingAddress?.postalCode}<br />
+              Phone: {order.shippingAddress?.phone}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-card p-4">
             <h2 className="font-semibold mb-2 flex items-center gap-2"><CreditCard className="h-4 w-4" /> Payment Summary</h2>
             <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span>Subtotal</span><span>₦{order.itemsPrice.toLocaleString()}</span></div>
-              <div className="flex justify-between"><span>Shipping</span><span>₦{order.shippingPrice.toLocaleString()}</span></div>
-              <div className="border-t pt-1 mt-1 font-bold flex justify-between"><span>Total</span><span>₦{order.totalPrice.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span>Subtotal</span><span>₦{order.itemsPrice?.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span>Shipping</span><span>₦{order.shippingPrice?.toLocaleString()}</span></div>
+              <div className="border-t pt-1 mt-1 font-bold flex justify-between"><span>Total</span><span>₦{order.totalPrice?.toLocaleString()}</span></div>
             </div>
             <p className="text-xs text-gray-500 mt-2">Payment: {order.paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : 'Card'}</p>
           </div>
@@ -101,4 +99,3 @@ export default function OrderDetailPage() {
     </div>
   );
 }
-
