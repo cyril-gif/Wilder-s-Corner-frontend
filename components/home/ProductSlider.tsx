@@ -67,9 +67,9 @@ export default function ProductSlider() {
                 {product.description}
               </p>
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-xl md:text-2xl font-bold">₦{price.toLocaleString()}</span>
+                <span className="text-xl md:text-2xl font-bold">${price.toLocaleString()}</span>
                 {originalPrice && (
-                  <span className="text-sm text-gray-300 line-through">₦{originalPrice.toLocaleString()}</span>
+                  <span className="text-sm text-gray-300 line-through">${originalPrice.toLocaleString()}</span>
                 )}
               </div>
               <button className="bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-primary/90 transition">

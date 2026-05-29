@@ -4,7 +4,7 @@ import { Star, Truck, Shield, Clock, Award, Heart, Zap, CheckCircle, Sparkles } 
 
 const scrollingText = [
   { icon: Award, text: "🏆 Ghana's #1 Trusted Online Store" },
-  { icon: Truck, text: "🚚 FREE Delivery on Orders Over ₦5,000" },
+  { icon: Truck, text: "🚚 FREE Delivery on Orders Over $5,000" },
   { icon: Shield, text: "🔒 100% Secure Payments" },
   { icon: Clock, text: "⏰ 24/7 Customer Support" },
   { icon: Zap, text: "⚡ Flash Sales Up to 50% OFF" },

@@ -234,15 +234,15 @@ function CheckoutContent() {
               <div className="border-t pt-4 mt-4">
                 <div className="flex justify-between mb-2">
                   <span>Subtotal</span>
-                  <span>₦{subtotal.toLocaleString()}</span>
+                  <span>${subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Shipping</span>
-                  <span>{shipping === 0 ? 'Free' : `₦${shipping.toLocaleString()}`}</span>
+                  <span>{shipping === 0 ? 'Free' : `$${shipping.toLocaleString()}`}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t">
                   <span>Total</span>
-                  <span>₦{total.toLocaleString()}</span>
+                  <span>${total.toLocaleString()}</span>
                 </div>
               </div>
               <Button onClick={placeOrder} disabled={isSubmitting} className="w-full mt-4 bg-primary">
@@ -260,7 +260,7 @@ function CheckoutContent() {
               {items.map(item => (
                 <div key={item.productId} className="flex justify-between text-sm">
                   <span>{item.name} x{item.qty}</span>
-                  <span>₦{(item.price * item.qty).toLocaleString()}</span>
+                  <span>${(item.price * item.qty).toLocaleString()}</span>
                 </div>
               ))}
             </div>

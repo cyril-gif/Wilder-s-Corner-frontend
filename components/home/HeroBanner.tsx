@@ -101,11 +101,11 @@ export default function HeroBanner() {
                     </h2>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-white text-lg md:text-xl font-bold">
-                        ₦{price.toLocaleString()}
+                        ${price.toLocaleString()}
                       </span>
                       {originalPrice && (
                         <span className="text-gray-300 text-sm line-through">
-                          ₦{originalPrice.toLocaleString()}
+                          ${originalPrice.toLocaleString()}
                         </span>
                       )}
                     </div>

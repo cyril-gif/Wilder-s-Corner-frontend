@@ -116,7 +116,7 @@ export default function AdminOrders() {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-lg text-primary">
-                        ₦{order.totalPrice.toLocaleString()}
+                        ${order.totalPrice.toLocaleString()}
                       </p>
                       <p className="text-xs text-gray-500 mt-1 capitalize">
                         {order.paymentMethod.replace(/_/g, ' ')}

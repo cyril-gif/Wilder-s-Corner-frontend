@@ -40,7 +40,7 @@ export default function CartPage() {
                 <h3 className="font-medium">{item.name}</h3>
                 {item.size && <p className="text-sm text-gray-500">Size: {item.size}</p>}
                 {item.color && <p className="text-sm text-gray-500">Color: {item.color}</p>}
-                <p className="text-primary font-semibold">₦{item.price.toLocaleString()}</p>
+                <p className="text-primary font-semibold">${item.price.toLocaleString()}</p>
                 <div className="flex items-center gap-3 mt-2">
                   <button onClick={() => updateQuantity(item.productId, item.qty - 1)} className="border rounded p-1"><Minus className="h-3 w-3" /></button>
                   <span className="w-8 text-center">{item.qty}</span>
@@ -49,7 +49,7 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-semibold">₦{(item.price * item.qty).toLocaleString()}</p>
+                <p className="font-semibold">${(item.price * item.qty).toLocaleString()}</p>
               </div>
             </div>
           ))}
@@ -65,15 +65,15 @@ export default function CartPage() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>₦{subtotal.toLocaleString()}</span>
+                <span>${subtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span>{shipping === 0 ? 'Free' : `₦${shipping.toLocaleString()}`}</span>
+                <span>{shipping === 0 ? 'Free' : `$${shipping.toLocaleString()}`}</span>
               </div>
               <div className="border-t pt-2 mt-2 font-semibold flex justify-between">
                 <span>Total</span>
-                <span>₦{total.toLocaleString()}</span>
+                <span>${total.toLocaleString()}</span>
               </div>
             </div>
             <Link href="/checkout">

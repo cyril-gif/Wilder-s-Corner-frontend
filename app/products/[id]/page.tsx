@@ -73,8 +73,8 @@ export default function ProductDetailPage() {
             <span className="text-sm text-gray-500">({product.reviews?.length || 0} reviews)</span>
           </div>
           <div className="mb-4">
-            <span className="text-3xl text-primary font-bold">₦{price.toLocaleString()}</span>
-            {originalPrice && <span className="text-lg text-gray-400 line-through ml-2">₦{originalPrice.toLocaleString()}</span>}
+            <span className="text-3xl text-primary font-bold">${price.toLocaleString()}</span>
+            {originalPrice && <span className="text-lg text-gray-400 line-through ml-2">${originalPrice.toLocaleString()}</span>}
           </div>
           <p className="text-gray-600 mb-4">{product.description}</p>
 

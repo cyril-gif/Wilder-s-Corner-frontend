@@ -214,7 +214,7 @@ export default function AdminProducts() {
                   )}
                   <div>
                     <div className="font-medium">{p.name}</div>
-                    <div className="text-sm">₦{p.price}</div>
+                    <div className="text-sm">${p.price}</div>
                   </div>
                 </div>
                 <div className="flex gap-2">

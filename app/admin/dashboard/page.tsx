@@ -45,7 +45,7 @@ export default function AdminDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₦{stats.totalSales.toLocaleString()}</div>
+            <div className="text-2xl font-bold">${stats.totalSales.toLocaleString()}</div>
           </CardContent>
         </Card>
         
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
                     <p className="text-sm text-gray-500">{order.user?.name || 'Guest'}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold">₦{order.totalPrice.toLocaleString()}</p>
+                    <p className="font-bold">${order.totalPrice.toLocaleString()}</p>
                     <p className="text-sm capitalize text-gray-500">{order.status}</p>
                   </div>
                 </div>

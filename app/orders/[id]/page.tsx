@@ -41,9 +41,9 @@ export default function OrderDetailPage() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-500">Qty: {item.qty} × ₦{item.price.toLocaleString()}</p>
+                    <p className="text-sm text-gray-500">Qty: {item.qty} × ${item.price.toLocaleString()}</p>
                   </div>
-                  <div className="font-semibold">₦{(item.price * item.qty).toLocaleString()}</div>
+                  <div className="font-semibold">${(item.price * item.qty).toLocaleString()}</div>
                 </div>
               ))}
             </div>
@@ -88,9 +88,9 @@ export default function OrderDetailPage() {
           <div className="bg-white rounded-lg shadow-card p-4">
             <h2 className="font-semibold mb-2 flex items-center gap-2"><CreditCard className="h-4 w-4" /> Payment Summary</h2>
             <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span>Subtotal</span><span>₦{order.itemsPrice?.toLocaleString()}</span></div>
-              <div className="flex justify-between"><span>Shipping</span><span>₦{order.shippingPrice?.toLocaleString()}</span></div>
-              <div className="border-t pt-1 mt-1 font-bold flex justify-between"><span>Total</span><span>₦{order.totalPrice?.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span>Subtotal</span><span>${order.itemsPrice?.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span>Shipping</span><span>${order.shippingPrice?.toLocaleString()}</span></div>
+              <div className="border-t pt-1 mt-1 font-bold flex justify-between"><span>Total</span><span>${order.totalPrice?.toLocaleString()}</span></div>
             </div>
             <p className="text-xs text-gray-500 mt-2">Payment: {order.paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : 'Card'}</p>
           </div>
