@@ -12,8 +12,8 @@ interface ProductGridProps {
 }
 
 export default function ProductGrid({ title, filter = {}, limit = 8 }: ProductGridProps) {
-  const { data, isLoading } = useQuery({
-    queryKey: ['products', filter],
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['products', filter, limit],
     queryFn: () => fetchProducts({ ...filter, limit }),
   });
 
@@ -30,7 +30,21 @@ export default function ProductGrid({ title, filter = {}, limit = 8 }: ProductGr
     );
   }
 
-  if (!data?.products?.length) return null;
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        Failed to load products. Please try again.
+      </div>
+    );
+  }
+
+  if (!data?.products || data.products.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No products found in this category.
+      </div>
+    );
+  }
 
   return (
     <div className="mb-8">
@@ -43,3 +57,4 @@ export default function ProductGrid({ title, filter = {}, limit = 8 }: ProductGr
     </div>
   );
 }
+
