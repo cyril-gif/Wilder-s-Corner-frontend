@@ -7,6 +7,16 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  discountPrice?: number;
+  images?: string[];
+  slug?: string;
+}
+
 export default function HeroBanner() {
   const { data, isLoading } = useQuery({
     queryKey: ['sliderProducts'],
@@ -14,8 +24,8 @@ export default function HeroBanner() {
   });
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const products = data?.products || [];
-  const itemsPerPage = 2; // Show 2 products at a time
+  const products: Product[] = data?.products || [];
+  const itemsPerPage = 2;
   const totalSlides = Math.ceil(products.length / itemsPerPage);
 
   useEffect(() => {
@@ -63,7 +73,7 @@ export default function HeroBanner() {
   return (
     <div className="relative mb-8 group">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {visibleProducts.map((product) => {
+        {visibleProducts.map((product: Product) => {
           const price = product.discountPrice || product.price;
           const originalPrice = product.discountPrice ? product.price : null;
           const discountPercent = originalPrice 
@@ -110,7 +120,6 @@ export default function HeroBanner() {
         })}
       </div>
 
-      {/* Navigation Buttons - Only show if more than 2 products */}
       {totalSlides > 1 && (
         <>
           <button
@@ -130,7 +139,6 @@ export default function HeroBanner() {
         </>
       )}
 
-      {/* Dots Indicator */}
       {totalSlides > 1 && (
         <div className="flex justify-center gap-2 mt-4">
           {Array.from({ length: totalSlides }).map((_, idx) => (
