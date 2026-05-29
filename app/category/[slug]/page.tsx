@@ -4,6 +4,8 @@ import { useParams } from 'next/navigation';
 import { useState, Suspense } from 'react';
 import ProductGrid from '@/components/products/ProductGrid';
 import FilterSidebar from '@/components/products/FilterSidebar';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function CategoryContent() {
@@ -53,6 +55,13 @@ function CategoryContent() {
     </div>
   );
 }
+
+<div className="mb-4">
+  <Link href="/" className="inline-flex items-center text-primary hover:underline">
+    <ArrowLeft className="h-4 w-4 mr-1"  />
+    Back to Home
+  </Link>
+</div>
 
 export default function CategoryPage() {
   return (
