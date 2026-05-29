@@ -1,16 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductGrid from '@/components/products/ProductGrid';
 import FilterSidebar from '@/components/products/FilterSidebar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || '';
   const initialSearch = searchParams.get('search') || '';
-  const initialFlashSale = searchParams.get('flashSale') === 'true';
+  const initialFlashSale = searchParams.get('isFlashSale') === 'true';
+  const initialSort = searchParams.get('sort') || '-createdAt';
 
   const [filters, setFilters] = useState({
     category: initialCategory,
@@ -18,10 +19,9 @@ export default function ProductsPage() {
     isFlashSale: initialFlashSale,
     minPrice: '',
     maxPrice: '',
-    sort: '-createdAt',
+    sort: initialSort,
     inStock: '',
   });
-
   const [page, setPage] = useState(1);
 
   const updateFilter = (key: string, value: any) => {
@@ -29,24 +29,11 @@ export default function ProductsPage() {
     setPage(1);
   };
 
-  // Sync URL query params into filters
-  useEffect(() => {
-    setFilters(prev => ({
-      ...prev,
-      category: initialCategory,
-      search: initialSearch,
-      isFlashSale: initialFlashSale,
-    }));
-  }, [initialCategory, initialSearch, initialFlashSale]);
-
   return (
     <div className="flex flex-col md:flex-row gap-6">
-      {/* Sidebar Filters */}
       <aside className="md:w-72 flex-shrink-0">
         <FilterSidebar filters={filters} updateFilter={updateFilter} />
       </aside>
-
-      {/* Main Content */}
       <div className="flex-1">
         <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
           <div className="text-sm text-gray-500">Showing products</div>
@@ -63,16 +50,22 @@ export default function ProductsPage() {
             </SelectContent>
           </Select>
         </div>
-
         <ProductGrid 
           filter={filters} 
           limit={12} 
-          pagination 
-          page={page} 
-          onPageChange={setPage} 
+          pagination={true}
+          page={page}
+          onPageChange={setPage}
         />
       </div>
     </div>
   );
 }
 
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ProductsContent />
+    </Suspense>
+  );
+}
