@@ -15,6 +15,9 @@ export default function HomePage() {
       <MarqueeBanner />
       
       <ProductGrid title="⭐ Featured Products" filter={{ isFeatured: true, limit: 8 }} limit={8} />
+
+      {/* Professional Animated Banner */}
+      <MarqueeBanner />
       
       <ProductGrid title="🔥 Best Sellers" filter={{ sort: '-sold', limit: 8 }} limit={8} />
     </>

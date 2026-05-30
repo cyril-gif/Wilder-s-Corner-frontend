@@ -50,3 +50,17 @@ body {
   animation-delay: 1000ms;
 }
 
+/* Navbar transition */
+header {
+  transition: box-shadow 0.3s ease;
+}
+
+/* Category bar scrollbar hiding */
+.overflow-x-auto::-webkit-scrollbar {
+  display: none;
+}
+.overflow-x-auto {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
