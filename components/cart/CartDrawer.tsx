@@ -33,7 +33,7 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
                   </div>
                   <div className="flex-1">
                     <h4 className="text-sm font-medium">{item.name}</h4>
-                    <p className="text-xs text-gray-500">${item.price.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500">₵{item.price.toLocaleString()}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <button onClick={() => updateQuantity(item.productId, item.qty - 1)} className="border rounded px-2 py-0.5">-</button>
                       <span className="text-sm w-6 text-center">{item.qty}</span>
@@ -51,7 +51,7 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
             <div className="border-t p-4 space-y-3">
               <div className="flex justify-between font-semibold">
                 <span>Subtotal</span>
-                <span>${subtotal.toLocaleString()}</span>
+                <span>₵{subtotal.toLocaleString()}</span>
               </div>
               <Link href="/checkout" onClick={onClose}>
                 <Button className="w-full bg-primary">Proceed to Checkout</Button>

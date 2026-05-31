@@ -20,7 +20,7 @@ export default function CategoryBar() {
           {categories.map((cat) => {
             let href = '#';
             if (cat.type === 'category') {
-              href = `/category/${cat.slug}`;
+              href = `/category/${cat.slug}`;        // ✅ CORRECT: single curly braces
             } else if (cat.type === 'flash') {
               href = '/products?isFlashSale=true';
             } else if (cat.type === 'new') {

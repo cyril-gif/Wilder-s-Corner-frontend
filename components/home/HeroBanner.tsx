@@ -81,7 +81,7 @@ export default function HeroBanner() {
             : 0;
 
           return (
-            <Link href={`/products/${product.slug || product._id}`} key={product._id}>
+            <Link href={`/products/₵{product.slug || product._id}`} key={product._id}>
               <div className="relative h-64 md:h-72 rounded-lg overflow-hidden cursor-pointer group/item">
                 <Image
                   src={product.images?.[0] || '/placeholder.jpg'}
@@ -101,11 +101,11 @@ export default function HeroBanner() {
                     </h2>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-white text-lg md:text-xl font-bold">
-                        ${price.toLocaleString()}
+                        ₵{price.toLocaleString()}
                       </span>
                       {originalPrice && (
                         <span className="text-gray-300 text-sm line-through">
-                          ${originalPrice.toLocaleString()}
+                          ₵{originalPrice.toLocaleString()}
                         </span>
                       )}
                     </div>
@@ -145,12 +145,12 @@ export default function HeroBanner() {
             <button
               key={idx}
               onClick={() => setCurrentIndex(idx)}
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`h-2 rounded-full transition-all duration-300 ₵{
                 idx === currentIndex 
                   ? 'w-6 bg-primary' 
                   : 'w-2 bg-gray-300 hover:bg-gray-400'
               }`}
-              aria-label={`Go to slide ${idx + 1}`}
+              aria-label={`Go to slide ₵{idx + 1}`}
             />
           ))}
         </div>

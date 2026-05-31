@@ -95,7 +95,7 @@ export default function AdminProducts() {
     });
     try {
       if (editing) {
-        await axios.put(`/admin/products/${editing}`, formData, {
+        await axios.put(`/admin/products/₵{editing}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
@@ -115,7 +115,7 @@ export default function AdminProducts() {
   const deleteProduct = async (id: string) => {
     if (!confirm('Delete this product?')) return;
     try {
-      await axios.delete(`/admin/products/${id}`);
+      await axios.delete(`/admin/products/₵{id}`);
       fetchProducts();
     } catch (err) {
       alert('Delete failed');

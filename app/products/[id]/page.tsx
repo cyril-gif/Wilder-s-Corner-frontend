@@ -73,7 +73,7 @@ export default function ProductDetailPage() {
           <div className="flex gap-2 mt-2">
             {product.images.slice(1, 5).map((img: string, i: number) => (
               <div key={i} className="relative h-20 w-20 bg-gray-100 rounded overflow-hidden cursor-pointer">
-                <Image src={img} alt={`${product.name} ${i+1}`} fill className="object-cover" />
+                <Image src={img} alt={`₵{product.name} ₵{i+1}`} fill className="object-cover" />
               </div>
             ))}
           </div>
@@ -85,7 +85,7 @@ export default function ProductDetailPage() {
           <div className="flex items-center gap-2 mb-3">
             <div className="flex text-yellow-500">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className={`h-4 w-4 ${i < Math.floor(product.ratings) ? 'fill-current' : ''}`} />
+                <Star key={i} className={`h-4 w-4 ₵{i < Math.floor(product.ratings) ? 'fill-current' : ''}`} />
               ))}
             </div>
             <span className="text-sm text-gray-500">({product.reviews?.length || 0} reviews)</span>
@@ -105,7 +105,7 @@ export default function ProductDetailPage() {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`border rounded px-3 py-1 text-sm ${selectedSize === size ? 'border-primary bg-primary/10' : 'border-gray-300'}`}
+                    className={`border rounded px-3 py-1 text-sm ₵{selectedSize === size ? 'border-primary bg-primary/10' : 'border-gray-300'}`}
                   >
                     {size}
                   </button>
@@ -158,7 +158,7 @@ export default function ProductDetailPage() {
             <div key={review._id} className="border-b py-3">
               <div className="flex items-center gap-2">
                 <div className="flex text-yellow-500 text-sm">
-                  {[...Array(5)].map((_, i) => <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'fill-current' : ''}`} />)}
+                  {[...Array(5)].map((_, i) => <Star key={i} className={`h-3 w-3 ₵{i < review.rating ? 'fill-current' : ''}`} />)}
                 </div>
                 <span className="font-medium">{review.user?.name}</span>
               </div>

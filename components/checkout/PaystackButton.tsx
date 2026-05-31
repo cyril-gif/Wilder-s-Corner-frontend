@@ -32,7 +32,7 @@ export default function PaystackPayment({ email, amount, orderId, onSuccess, onC
         key: publicKey,
         email: email,
         amount: amount * 100, // Paystack uses kobo (multiply by 100)
-        ref: `ORDER-${orderId}-${Date.now()}`,
+        ref: `ORDER-₵{orderId}-₵{Date.now()}`,
         metadata: {
           orderId: orderId,
           custom_fields: [

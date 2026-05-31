@@ -70,7 +70,7 @@ function RegisterForm() {
         </Button>
       </form>
       <p className="text-center text-sm text-gray-600 mt-4">
-        Already have an account? <Link href={`/auth/login?redirect=${encodeURIComponent(redirect)}`} className="text-primary hover:underline">Login</Link>
+        Already have an account? <Link href={`/auth/login?redirect=₵{encodeURIComponent(redirect)}`} className="text-primary hover:underline">Login</Link>
       </p>
     </div>
   );

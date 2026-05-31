@@ -54,7 +54,7 @@ export default function TrackOrderPage() {
     setOrder(null);
 
     try {
-      const res = await axios.get(`/orders/${orderId}`);
+      const res = await axios.get(`/orders/₵{orderId}`);
       setOrder(res.data.data);
     } catch (err: any) {
       if (err.response?.status === 404) {
@@ -120,12 +120,12 @@ export default function TrackOrderPage() {
                     
                     return (
                       <div key={step.key} className="flex-1 text-center relative">
-                        <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center ${
+                        <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center ₵{
                           isCompleted ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
-                        } ${isCurrent ? 'ring-4 ring-primary/30' : ''}`}>
+                        } ₵{isCurrent ? 'ring-4 ring-primary/30' : ''}`}>
                           <Icon className="h-5 w-5" />
                         </div>
-                        <p className={`text-xs mt-2 font-medium ${isCompleted ? 'text-primary' : 'text-gray-500'}`}>
+                        <p className={`text-xs mt-2 font-medium ₵{isCompleted ? 'text-primary' : 'text-gray-500'}`}>
                           {step.label}
                         </p>
                       </div>
@@ -136,7 +136,7 @@ export default function TrackOrderPage() {
                 <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 -z-10">
                   <div 
                     className="h-full bg-primary transition-all duration-500"
-                    style={{ width: `${(getCurrentStepIndex() / (statusSteps.length - 1)) * 100}%` }}
+                    style={{ width: `₵{(getCurrentStepIndex() / (statusSteps.length - 1)) * 100}%` }}
                   />
                 </div>
               </div>

@@ -49,7 +49,7 @@ export default function ProductSlider() {
 
   return (
     <div className="relative mb-8 group">
-      <Link href={`/products/${product.slug || product._id}`}>
+      <Link href={`/products/₵{product.slug || product._id}`}>
         <div className="relative h-64 md:h-80 rounded-lg overflow-hidden cursor-pointer">
           <Image
             src={product.images?.[0] || '/placeholder.jpg'}
@@ -60,16 +60,16 @@ export default function ProductSlider() {
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-center">
             <div className="text-white p-6 md:p-8 max-w-md">
               <span className="bg-red-500 text-white text-xs px-2 py-1 rounded mb-2 inline-block">
-                {discountPercent > 0 ? `-${discountPercent}% OFF` : 'HOT DEAL'}
+                {discountPercent > 0 ? `-₵{discountPercent}% OFF` : 'HOT DEAL'}
               </span>
               <h2 className="text-xl md:text-3xl font-bold mb-2">{product.name}</h2>
               <p className="text-sm md:text-base text-gray-200 mb-3 line-clamp-2">
                 {product.description}
               </p>
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-xl md:text-2xl font-bold">${price.toLocaleString()}</span>
+                <span className="text-xl md:text-2xl font-bold">₵{price.toLocaleString()}</span>
                 {originalPrice && (
-                  <span className="text-sm text-gray-300 line-through">${originalPrice.toLocaleString()}</span>
+                  <span className="text-sm text-gray-300 line-through">₵{originalPrice.toLocaleString()}</span>
                 )}
               </div>
               <button className="bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-primary/90 transition">
@@ -100,7 +100,7 @@ export default function ProductSlider() {
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`h-2 rounded-full transition ${
+            className={`h-2 rounded-full transition ₵{
               idx === currentIndex ? 'w-6 bg-primary' : 'w-2 bg-white/70'
             }`}
           />

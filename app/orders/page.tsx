@@ -62,7 +62,7 @@ function OrdersContent() {
                   <span className="capitalize font-medium">{order.status}</span>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold">${order.totalPrice.toLocaleString()}</p>
+                  <p className="font-bold">₵{order.totalPrice.toLocaleString()}</p>
                   <p className="text-xs text-gray-500">{order.paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : 'Paid'}</p>
                 </div>
               </div>

@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from '@/lib/api';
 import Image from 'next/image';
 import { Package, MapPin, CreditCard } from 'lucide-react';
+import useAuthStore from '@/store/authStore';
 
 const fetchOrder = async (id: string) => {
   const { data } = await axios.get(`/orders/${id}`);
@@ -13,14 +14,40 @@ const fetchOrder = async (id: string) => {
 
 export default function OrderDetailPage() {
   const { id } = useParams();
+  const { user } = useAuthStore();
+
   const { data: order, isLoading, error } = useQuery({
     queryKey: ['order', id],
     queryFn: () => fetchOrder(id as string),
     retry: false,
+    enabled: !!user, // Only fetch if user is logged in
   });
 
-  if (isLoading) return <div className="container mx-auto px-4 py-8">Loading order details...</div>;
-  if (error || !order) return <div className="container mx-auto px-4 py-8">Order not found. Please login.</div>;
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <p className="text-red-500">Please login to view order details.</p>
+        <a href="/auth/login" className="text-primary hover:underline mt-2 inline-block">
+          Go to Login
+        </a>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return <div className="container mx-auto px-4 py-8">Loading order details...</div>;
+  }
+
+  if (error || !order) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <p className="text-red-500">Order not found.</p>
+        <a href="/orders" className="text-primary hover:underline mt-2 inline-block">
+          Back to My Orders
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -41,9 +68,9 @@ export default function OrderDetailPage() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-500">Qty: {item.qty} × ${item.price.toLocaleString()}</p>
+                    <p className="text-sm text-gray-500">Qty: {item.qty} × ₵{item.price.toLocaleString()}</p>
                   </div>
-                  <div className="font-semibold">${(item.price * item.qty).toLocaleString()}</div>
+                  <div className="font-semibold">₵{(item.price * item.qty).toLocaleString()}</div>
                 </div>
               ))}
             </div>
@@ -88,11 +115,13 @@ export default function OrderDetailPage() {
           <div className="bg-white rounded-lg shadow-card p-4">
             <h2 className="font-semibold mb-2 flex items-center gap-2"><CreditCard className="h-4 w-4" /> Payment Summary</h2>
             <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span>Subtotal</span><span>${order.itemsPrice?.toLocaleString()}</span></div>
-              <div className="flex justify-between"><span>Shipping</span><span>${order.shippingPrice?.toLocaleString()}</span></div>
-              <div className="border-t pt-1 mt-1 font-bold flex justify-between"><span>Total</span><span>${order.totalPrice?.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span>Subtotal</span><span>₵{order.itemsPrice?.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span>Shipping</span><span>₵{order.shippingPrice?.toLocaleString()}</span></div>
+              <div className="border-t pt-1 mt-1 font-bold flex justify-between"><span>Total</span><span>₵{order.totalPrice?.toLocaleString()}</span></div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">Payment: {order.paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : 'Card'}</p>
+            <p className="text-xs text-gray-500 mt-2">
+              Payment: {order.paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : 'Card'}
+            </p>
           </div>
         </div>
       </div>

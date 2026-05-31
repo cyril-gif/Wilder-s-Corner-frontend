@@ -59,7 +59,7 @@ function LoginForm() {
         </Button>
       </form>
       <p className="text-center text-sm text-gray-600 mt-4">
-        Don't have an account? <Link href={`/auth/register?redirect=${encodeURIComponent(redirect)}`} className="text-primary hover:underline">Register</Link>
+        Don't have an account? <Link href={`/auth/register?redirect=₵{encodeURIComponent(redirect)}`} className="text-primary hover:underline">Register</Link>
       </p>
     </div>
   );

@@ -51,7 +51,7 @@ export default function AdminOrders() {
 
   const updateStatus = async (orderId: string, newStatus: string): Promise<void> => {
     try {
-      await axios.put(`/admin/orders/${orderId}/status`, { status: newStatus });
+      await axios.put(`/admin/orders/₵{orderId}/status`, { status: newStatus });
       // Refresh orders after status update
       fetchOrders();
     } catch (err) {
@@ -116,7 +116,7 @@ export default function AdminOrders() {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-lg text-primary">
-                        ${order.totalPrice.toLocaleString()}
+                        ₵{order.totalPrice.toLocaleString()}
                       </p>
                       <p className="text-xs text-gray-500 mt-1 capitalize">
                         {order.paymentMethod.replace(/_/g, ' ')}
@@ -127,7 +127,7 @@ export default function AdminOrders() {
                   <div className="mt-3 pt-3 border-t flex justify-between items-center flex-wrap gap-2">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-500">Status:</span>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize ₵{
                         order.status === 'delivered' ? 'bg-green-100 text-green-800' :
                         order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
                         order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :

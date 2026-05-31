@@ -48,8 +48,8 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
           <div className="flex items-center justify-between mt-2">
             <div>
-              <span className="text-primary font-bold">${price.toLocaleString()}</span>
-              {originalPrice && <span className="text-xs text-gray-400 line-through ml-1">${originalPrice.toLocaleString()}</span>}
+              <span className="text-primary font-bold">₵{price.toLocaleString()}</span>
+              {originalPrice && <span className="text-xs text-gray-400 line-through ml-1">₵{originalPrice.toLocaleString()}</span>}
             </div>
             <Button size="sm" onClick={handleAddToCart} className="bg-primary hover:bg-primary/90">
               <ShoppingCart className="h-4 w-4" />

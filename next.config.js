@@ -8,11 +8,15 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',      // ← Add this
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
-  allowedDevOrigins: ['172.20.10.10'],
 };
-  
-
 
 module.exports = nextConfig;
+
