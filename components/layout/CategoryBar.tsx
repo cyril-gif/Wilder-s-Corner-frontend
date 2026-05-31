@@ -14,7 +14,7 @@ const categories = [
 
 export default function CategoryBar() {
   return (
-    <div className="bg-white border-b border-gray-200 shadow-sm sticky top-[73px] z-40">
+    <div className="hidden md:block bg-white border-b border-gray-200 shadow-sm sticky top-[73px] z-40">
       <div className="container mx-auto px-4">
         <div className="flex overflow-x-auto gap-6 py-3 whitespace-nowrap">
           {categories.map((cat) => {

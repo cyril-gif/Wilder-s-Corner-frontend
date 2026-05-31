@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { fetchProductById } from '@/lib/api';
 import Image from 'next/image';
@@ -13,6 +13,7 @@ import ProductGrid from '@/components/products/ProductGrid';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
+  const router = useRouter();
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
     queryFn: () => fetchProductById(id as string),
@@ -22,6 +23,7 @@ export default function ProductDetailPage() {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const addItem = useCartStore((state) => state.addItem);
+  const { items } = useCartStore();
 
   if (isLoading) return <div className="container mx-auto px-4 py-8">Loading product...</div>;
   if (error || !product) return <div className="container mx-auto px-4 py-8">Product not found</div>;
@@ -40,8 +42,24 @@ export default function ProductDetailPage() {
       color: selectedColor,
       stock: product.stock,
     });
-    // Optionally show toast notification
+    // Optional: show a toast notification
     alert('Added to cart!');
+  };
+
+  const handleBuyNow = () => {
+    // Add to cart first
+    addItem({
+      productId: product._id,
+      name: product.name,
+      price: price,
+      image: product.images[0],
+      qty: quantity,
+      size: selectedSize,
+      color: selectedColor,
+      stock: product.stock,
+    });
+    // Then redirect to checkout
+    router.push('/checkout');
   };
 
   return (
@@ -73,8 +91,8 @@ export default function ProductDetailPage() {
             <span className="text-sm text-gray-500">({product.reviews?.length || 0} reviews)</span>
           </div>
           <div className="mb-4">
-            <span className="text-3xl text-primary font-bold">${price.toLocaleString()}</span>
-            {originalPrice && <span className="text-lg text-gray-400 line-through ml-2">${originalPrice.toLocaleString()}</span>}
+            <span className="text-3xl text-primary font-bold">₵{price.toLocaleString()}</span>
+            {originalPrice && <span className="text-lg text-gray-400 line-through ml-2">₵{originalPrice.toLocaleString()}</span>}
           </div>
           <p className="text-gray-600 mb-4">{product.description}</p>
 
@@ -82,7 +100,7 @@ export default function ProductDetailPage() {
           {product.attributes?.size?.length > 0 && (
             <div className="mb-4">
               <label className="block text-sm font-medium mb-2">Size</label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {product.attributes.size.map((size: string) => (
                   <button
                     key={size}
@@ -111,7 +129,9 @@ export default function ProductDetailPage() {
             <Button onClick={handleAddToCart} className="bg-primary hover:bg-primary/90 flex-1">
               <ShoppingCart className="h-4 w-4 mr-2" /> Add to Cart
             </Button>
-            <Button variant="outline" className="flex-1">Buy Now</Button>
+            <Button onClick={handleBuyNow} variant="outline" className="flex-1">
+              Buy Now
+            </Button>
           </div>
         </div>
       </div>
@@ -153,4 +173,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
