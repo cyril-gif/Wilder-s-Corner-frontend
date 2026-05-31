@@ -8,6 +8,56 @@ import { Label } from '@/components/ui/label';
 import useCartStore from '@/store/cartStore';
 import useAuthStore from '@/store/authStore';
 import { createOrder } from '@/lib/api';
+import axios from '@/lib/api';
+
+// Paystack inline component
+function PaystackButton({ email, amount, orderId, onSuccess, onClose }: any) {
+  const [isLoading, setIsLoading] = useState(false);
+  const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
+
+  const handlePayment = () => {
+    setIsLoading(true);
+    
+    const script = document.createElement('script');
+    script.src = 'https://js.paystack.co/v1/inline.js';
+    script.onload = () => {
+      const handler = (window as any).PaystackPop.setup({
+        key: publicKey,
+        email: email,
+        amount: amount * 100,
+        ref: `ORDER-${orderId}-${Date.now()}`,
+        metadata: { orderId: orderId },
+        callback: (response: any) => {
+          console.log('Payment success:', response);
+          setIsLoading(false);
+          onSuccess();
+        },
+        onClose: () => {
+          console.log('Payment closed');
+          setIsLoading(false);
+          onClose();
+        },
+      });
+      handler.openIframe();
+    };
+    script.onerror = () => {
+      console.error('Failed to load Paystack');
+      setIsLoading(false);
+      alert('Payment service unavailable. Please try again.');
+    };
+    document.body.appendChild(script);
+  };
+
+  return (
+    <Button 
+      onClick={handlePayment} 
+      disabled={isLoading || !publicKey}
+      className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition mt-4"
+    >
+      {isLoading ? 'Loading Paystack...' : '💳 Pay with Card'}
+    </Button>
+  );
+}
 
 function CheckoutContent() {
   const router = useRouter();
@@ -16,8 +66,6 @@ function CheckoutContent() {
   const { user } = useAuthStore();
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('cash_on_delivery');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
   const [address, setAddress] = useState({
     fullName: '',
     phone: '',
@@ -26,22 +74,21 @@ function CheckoutContent() {
     city: '',
     state: '',
     postalCode: '',
-    country: 'Nigeria',
+    country: 'Ghana',
   });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<any>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdOrderId, setCreatedOrderId] = useState('');
 
   const subtotal = getSubtotal();
-  const shipping = subtotal > 5000 ? 0 : 500;
+  const shipping = subtotal > 500 ? 0 : 50;
   const total = subtotal + shipping;
 
-  // Redirect if cart is empty
   if (items.length === 0) {
     router.push('/cart');
     return null;
   }
 
-  // Redirect if not logged in
   if (!user) {
     const redirectUrl = encodeURIComponent('/checkout');
     router.push(`/auth/login?redirect=${redirectUrl}`);
@@ -49,14 +96,13 @@ function CheckoutContent() {
   }
 
   const validateAddress = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: any = {};
     if (!address.fullName) newErrors.fullName = 'Full name required';
     if (!address.phone) newErrors.phone = 'Phone required';
     if (!address.addressLine1) newErrors.addressLine1 = 'Address required';
     if (!address.city) newErrors.city = 'City required';
     if (!address.state) newErrors.state = 'State required';
     if (!address.postalCode) newErrors.postalCode = 'Postal code required';
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -68,7 +114,7 @@ function CheckoutContent() {
     }
   };
 
-  const placeOrder = async () => {
+  const createOrderAndPay = async () => {
     setIsSubmitting(true);
     try {
       const orderData = {
@@ -79,7 +125,34 @@ function CheckoutContent() {
           color: item.color,
         })),
         shippingAddress: address,
-        paymentMethod,
+        paymentMethod: 'paystack',
+        itemsPrice: subtotal,
+        shippingPrice: shipping,
+        totalPrice: total,
+      };
+      const res = await createOrder(orderData);
+      setCreatedOrderId(res._id);
+      return res._id;
+    } catch (error) {
+      console.error('Order creation failed:', error);
+      alert('Failed to create order. Please try again.');
+      setIsSubmitting(false);
+      return null;
+    }
+  };
+
+  const placeOrderCOD = async () => {
+    setIsSubmitting(true);
+    try {
+      const orderData = {
+        orderItems: items.map(item => ({
+          product: item.productId,
+          qty: item.qty,
+          size: item.size,
+          color: item.color,
+        })),
+        shippingAddress: address,
+        paymentMethod: 'cash_on_delivery',
         itemsPrice: subtotal,
         shippingPrice: shipping,
         totalPrice: total,
@@ -93,6 +166,15 @@ function CheckoutContent() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handlePaymentSuccess = async () => {
+    clearCart();
+    router.push('/orders?payment=success');
+  };
+
+  const handlePaymentClose = () => {
+    setIsSubmitting(false);
   };
 
   const updateAddress = (field: string, value: string) => {
@@ -122,59 +204,38 @@ function CheckoutContent() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label>Full Name</Label>
-                    <Input 
-                      value={address.fullName}
-                      onChange={(e) => updateAddress('fullName', e.target.value)}
-                    />
+                    <Input value={address.fullName} onChange={(e) => updateAddress('fullName', e.target.value)} />
                     {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
                   </div>
                   <div>
                     <Label>Phone</Label>
-                    <Input 
-                      value={address.phone}
-                      onChange={(e) => updateAddress('phone', e.target.value)}
-                    />
+                    <Input value={address.phone} onChange={(e) => updateAddress('phone', e.target.value)} />
                     {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                   </div>
                 </div>
                 <div>
                   <Label>Address Line 1</Label>
-                  <Input 
-                    value={address.addressLine1}
-                    onChange={(e) => updateAddress('addressLine1', e.target.value)}
-                  />
+                  <Input value={address.addressLine1} onChange={(e) => updateAddress('addressLine1', e.target.value)} />
                   {errors.addressLine1 && <p className="text-red-500 text-xs mt-1">{errors.addressLine1}</p>}
                 </div>
                 <div>
                   <Label>Address Line 2 (Optional)</Label>
-                  <Input 
-                    value={address.addressLine2}
-                    onChange={(e) => updateAddress('addressLine2', e.target.value)}
-                  />
+                  <Input value={address.addressLine2} onChange={(e) => updateAddress('addressLine2', e.target.value)} />
                 </div>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <Label>City</Label>
-                    <Input 
-                      value={address.city}
-                      onChange={(e) => updateAddress('city', e.target.value)}
-                    />
+                    <Input value={address.city} onChange={(e) => updateAddress('city', e.target.value)} />
                     {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
                   </div>
                   <div>
                     <Label>State</Label>
-                    <Input 
-                      value={address.state}
-                      onChange={(e) => updateAddress('state', e.target.value)}
-                    />
+                    <Input value={address.state} onChange={(e) => updateAddress('state', e.target.value)} />
                     {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
                   </div>
                   <div>
                     <Label>Postal Code</Label>
-                    <Input 
-                      value={address.postalCode}
-                      onChange={(e) => updateAddress('postalCode', e.target.value)}
-                    />
+                    <Input value={address.postalCode} onChange={(e) => updateAddress('postalCode', e.target.value)} />
                     {errors.postalCode && <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>}
                   </div>
                 </div>
@@ -190,21 +251,25 @@ function CheckoutContent() {
           {step === 2 && (
             <div className="bg-white p-6 rounded-lg shadow-card">
               <h2 className="text-lg font-semibold mb-4">Payment Method</h2>
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 border p-3 rounded cursor-pointer">
+              <div className="space-y-3">
+                <label className="flex items-center space-x-3 border p-3 rounded cursor-pointer">
                   <input
                     type="radio"
                     value="cash_on_delivery"
                     checked={paymentMethod === 'cash_on_delivery'}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-4 h-4"
+                    onChange={() => setPaymentMethod('cash_on_delivery')}
                   />
-                  <span className="flex-1">Cash on Delivery</span>
+                  <span>💰 Cash on Delivery</span>
                 </label>
-                <div className="flex items-center space-x-2 border p-3 rounded opacity-50">
-                  <input type="radio" disabled className="w-4 h-4" />
-                  <span className="flex-1">Card Payment (Coming Soon)</span>
-                </div>
+                <label className="flex items-center space-x-3 border p-3 rounded cursor-pointer">
+                  <input
+                    type="radio"
+                    value="paystack"
+                    checked={paymentMethod === 'paystack'}
+                    onChange={() => setPaymentMethod('paystack')}
+                  />
+                  <span>💳 Pay with Card (Paystack)</span>
+                </label>
               </div>
               <div className="flex justify-between mt-6">
                 <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
@@ -228,31 +293,55 @@ function CheckoutContent() {
               </div>
               <div className="space-y-3 mb-4">
                 <h3 className="font-medium">Payment:</h3>
-                <p className="text-sm">{paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : 'Card'}</p>
+                <p className="text-sm">{paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : 'Card (Paystack)'}</p>
                 <button onClick={() => setStep(2)} className="text-primary text-sm hover:underline">Edit</button>
               </div>
               <div className="border-t pt-4 mt-4">
                 <div className="flex justify-between mb-2">
                   <span>Subtotal</span>
-                  <span>${subtotal.toLocaleString()}</span>
+                  <span>₵{subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Shipping</span>
-                  <span>{shipping === 0 ? 'Free' : `$${shipping.toLocaleString()}`}</span>
+                  <span>{shipping === 0 ? 'Free' : `₵${shipping.toLocaleString()}`}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t">
                   <span>Total</span>
-                  <span>${total.toLocaleString()}</span>
+                  <span>₵{total.toLocaleString()}</span>
                 </div>
               </div>
-              <Button onClick={placeOrder} disabled={isSubmitting} className="w-full mt-4 bg-primary">
-                {isSubmitting ? 'Placing Order...' : 'Place Order'}
-              </Button>
+              
+              {paymentMethod === 'cash_on_delivery' ? (
+                <Button onClick={placeOrderCOD} disabled={isSubmitting} className="w-full mt-4 bg-primary">
+                  {isSubmitting ? 'Placing Order...' : 'Place Order (Cash on Delivery)'}
+                </Button>
+              ) : (
+                <div>
+                  <Button 
+                    onClick={async () => {
+                      const orderId = await createOrderAndPay();
+                      if (orderId) setCreatedOrderId(orderId);
+                    }} 
+                    disabled={isSubmitting}
+                    className="w-full mt-4 bg-green-600 hover:bg-green-700"
+                  >
+                    {isSubmitting ? 'Creating Order...' : 'Proceed to Payment'}
+                  </Button>
+                  {createdOrderId && (
+                    <PaystackButton
+                      email={user?.email || ''}
+                      amount={total}
+                      orderId={createdOrderId}
+                      onSuccess={handlePaymentSuccess}
+                      onClose={handlePaymentClose}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Order Summary Sidebar */}
         <div className="lg:w-80">
           <div className="bg-gray-50 p-4 rounded-lg sticky top-24">
             <h3 className="font-semibold mb-3">Order Items ({items.length})</h3>
@@ -260,7 +349,7 @@ function CheckoutContent() {
               {items.map(item => (
                 <div key={item.productId} className="flex justify-between text-sm">
                   <span>{item.name} x{item.qty}</span>
-                  <span>${(item.price * item.qty).toLocaleString()}</span>
+                  <span>₵{(item.price * item.qty).toLocaleString()}</span>
                 </div>
               ))}
             </div>

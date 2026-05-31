@@ -47,9 +47,11 @@ const useAuthStore = create<AuthStore>((set) => ({
   fetchMe: async () => {
     try {
       const res = await api.get('/auth/me');
-      set({ user: res.data.data });
+      set({ user: res.data.data, isLoading: false });
+      return res.data.data;
     } catch {
-      set({ user: null });
+      set({ user: null, isLoading: false });
+      throw new Error('Not authenticated');
     }
   },
 }));

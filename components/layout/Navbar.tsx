@@ -189,7 +189,7 @@ export default function Navbar() {
       <div className="bg-gray-100 border-b border-gray-200 sticky top-[73px] md:top-[81px] z-40 hidden md:block">
         <div className="container mx-auto px-4">
           <div className="flex gap-8 py-3 overflow-x-auto whitespace-nowrap">
-            <Link href="/products" className="text-gray-700 hover:text-primary font-medium text-sm">All Products</Link>
+            <Link href="/products" className="text-gray-700 hover:text-primary font-medium text-sm">Home</Link>
             <Link href="/category/shoes" className="text-gray-700 hover:text-primary text-sm">👟 Shoes</Link>
             <Link href="/category/belts" className="text-gray-700 hover:text-primary text-sm">🔗 Belts</Link>
             <Link href="/category/hair-creams" className="text-gray-700 hover:text-primary text-sm">💇 Hair Creams</Link>
