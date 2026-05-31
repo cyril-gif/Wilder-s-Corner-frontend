@@ -5,6 +5,7 @@ import Navbar from '@/components/layout/Navbar';
 import CategoryBar from '@/components/layout/CategoryBar';
 import Breadcrumb from '@/components/layout/Breadcrumb';
 import Footer from '@/components/layout/Footer';
+import LogoBanner from '@/components/layout/LogoBanner';
 
 export const metadata: Metadata = {
   title: "Wlider's Corner - Quality Shoes, Bags & More",
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="flex flex-col min-h-screen">
         <QueryProvider>
           <Navbar />
+          < LogoBanner />
           <CategoryBar />
           <Breadcrumb />
           <main className="flex-grow container mx-auto px-4 py-6">{children}</main>
