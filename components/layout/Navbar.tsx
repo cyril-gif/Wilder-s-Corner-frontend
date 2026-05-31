@@ -9,6 +9,7 @@ import useAuthStore from '@/store/authStore';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MobileNav from './MobileNav';
+import Image from 'next/image'; // ← add this
 
 export default function Navbar() {
   const { items } = useCartStore();
@@ -26,15 +27,26 @@ export default function Navbar() {
     <header className="bg-primary sticky top-0 z-50 shadow-md">
       <div className="px-3 py-2">
         <div className="flex items-center justify-between gap-2">
-          {/* Left side: Hamburger + Logo */}
+          {/* Left side: Hamburger + Logo + Text */}
           <div className="flex items-center gap-2 shrink-0">
             <MobileNav />
-            <Link href="/" className="text-white font-bold text-base sm:text-lg whitespace-nowrap">
-              Wilder's Corner
+            <Link href="/" className="flex items-center gap-1 sm:gap-2">
+              {/* Logo image – place a small logo in /public/logo-icon.png */}
+              <div className="relative w-6 h-6 sm:w-8 sm:h-8">
+                <Image
+                  src="/logo-icon.png"   // or use an emoji/icon if no image
+                  alt="Logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <span className="text-white font-bold text-base sm:text-lg whitespace-nowrap">
+                Wilder's Corner
+              </span>
             </Link>
           </div>
 
-          {/* Search bar - hidden on very small screens? No, keep but limit width */}
+          {/* Search bar */}
           <form onSubmit={handleSearch} className="flex-1 max-w-[160px] sm:max-w-md">
             <div className="relative">
               <Input
@@ -50,7 +62,7 @@ export default function Navbar() {
             </div>
           </form>
 
-          {/* Right icons: Cart and User (desktop) */}
+          {/* Right icons */}
           <div className="flex items-center gap-1 shrink-0">
             {user ? (
               <div className="hidden md:block relative">
@@ -79,4 +91,3 @@ export default function Navbar() {
     </header>
   );
 }
-
