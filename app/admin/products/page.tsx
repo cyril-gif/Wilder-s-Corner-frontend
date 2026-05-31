@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Image from 'next/image';
+import { Pencil, Trash2, Plus, X } from 'lucide-react';
 
 interface Product {
   _id: string;
@@ -19,22 +21,17 @@ interface Product {
   images?: string[];
 }
 
-interface ProductForm {
+interface Category {
+  _id: string;
   name: string;
-  description: string;
-  price: string;
-  discountPrice: string;
-  stock: string;
-  category: string;
-  brand: string;
-  images: File[];
 }
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
-  const [form, setForm] = useState<ProductForm>({
+  const [form, setForm] = useState({
     name: '',
     description: '',
     price: '',
@@ -42,14 +39,17 @@ export default function AdminProducts() {
     stock: '',
     category: '',
     brand: '',
-    images: []
+    images: [] as File[],
   });
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
 
-  const fetchProducts = async (): Promise<void> => {
+  const fetchProducts = async () => {
     try {
       const res = await axios.get('/products?limit=100');
       setProducts(res.data.data.products);
@@ -60,188 +60,245 @@ export default function AdminProducts() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get('/categories');
+      setCategories(res.data.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setForm({ ...form, images: files });
+    const previews = files.map(file => URL.createObjectURL(file));
+    setImagePreviews(previews);
+  };
+
+  const resetForm = () => {
+    setEditing(null);
+    setForm({ name: '', description: '', price: '', discountPrice: '', stock: '', category: '', brand: '', images: [] });
+    setImagePreviews([]);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     const formData = new FormData();
     Object.keys(form).forEach(key => {
       if (key === 'images') {
-        for (let i = 0; i < form.images.length; i++) {
-          formData.append('images', form.images[i]);
-        }
+        form.images.forEach(file => formData.append('images', file));
       } else {
-        formData.append(key, form[key as keyof ProductForm] as string);
+        formData.append(key, form[key as keyof typeof form] as string);
       }
     });
-
     try {
       if (editing) {
         await axios.put(`/admin/products/${editing}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
         await axios.post('/admin/products', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
       }
       fetchProducts();
       resetForm();
-    } catch (err) {
-      alert('Failed to save product');
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to save product');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const resetForm = (): void => {
-    setEditing(null);
-    setForm({ name: '', description: '', price: '', discountPrice: '', stock: '', category: '', brand: '', images: [] });
-  };
-
-  const deleteProduct = async (id: string): Promise<void> => {
-    if (confirm('Delete this product?')) {
+  const deleteProduct = async (id: string) => {
+    if (!confirm('Delete this product?')) return;
+    try {
       await axios.delete(`/admin/products/${id}`);
       fetchProducts();
+    } catch (err) {
+      alert('Delete failed');
     }
   };
 
-  if (loading) return <div>Loading products...</div>;
+  if (loading) return <div className="text-center py-10">Loading products...</div>;
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Manage Products</h1>
-      <div className="grid lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>{editing ? 'Edit Product' : 'Add New Product'}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-8">
+      <h1 className="text-2xl font-bold">Manage Products</h1>
+
+      {/* Add / Edit Form Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{editing ? 'Edit Product' : 'Add New Product'}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label>Name</Label>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                required
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Input
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Name</Label>
-                <Input 
-                  value={form.name} 
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, name: e.target.value})} 
-                  required 
+                <Label>Price (GHS)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={form.price}
+                  onChange={(e) => setForm({ ...form, price: e.target.value })}
+                  required
                 />
               </div>
               <div>
-                <Label>Description</Label>
-                <Input 
-                  value={form.description} 
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, description: e.target.value})} 
-                  required 
+                <Label>Discount Price (GHS)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={form.discountPrice}
+                  onChange={(e) => setForm({ ...form, discountPrice: e.target.value })}
+                  placeholder="Optional"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Price</Label>
-                  <Input 
-                    type="number" 
-                    value={form.price} 
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, price: e.target.value})} 
-                    required 
-                  />
-                </div>
-                <div>
-                  <Label>Discount Price</Label>
-                  <Input 
-                    type="number" 
-                    value={form.discountPrice} 
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, discountPrice: e.target.value})} 
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Stock</Label>
-                  <Input 
-                    type="number" 
-                    value={form.stock} 
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, stock: e.target.value})} 
-                    required 
-                  />
-                </div>
-                <div>
-                  <Label>Brand</Label>
-                  <Input 
-                    value={form.brand} 
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, brand: e.target.value})} 
-                  />
-                </div>
-              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Category ID</Label>
-                <Input 
-                  value={form.category} 
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, category: e.target.value})} 
-                  required 
-                  placeholder="Enter category ID" 
+                <Label>Stock</Label>
+                <Input
+                  type="number"
+                  value={form.stock}
+                  onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                  required
                 />
               </div>
               <div>
-                <Label>Images</Label>
-                <Input 
-                  type="file" 
-                  multiple 
-                  accept="image/*" 
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    const files = Array.from(e.target.files || []);
-                    setForm({...form, images: files});
-                  }} 
+                <Label>Brand</Label>
+                <Input
+                  value={form.brand}
+                  onChange={(e) => setForm({ ...form, brand: e.target.value })}
+                  placeholder="e.g., Nike"
                 />
-                {form.images.length > 0 && (
-                  <p className="text-xs text-gray-500 mt-1">{form.images.length} image(s) selected</p>
+              </div>
+            </div>
+            <div>
+              <Label>Category</Label>
+              <select
+                className="w-full border rounded-md p-2 mt-1"
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                required
+              >
+                <option value="">Select a category</option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label>Product Images</Label>
+              <Input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageChange}
+                className="mt-1"
+              />
+              {imagePreviews.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {imagePreviews.map((src, idx) => (
+                    <div key={idx} className="relative w-16 h-16">
+                      <img src={src} alt="Preview" className="w-full h-full object-cover rounded" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newPreviews = imagePreviews.filter((_, i) => i !== idx);
+                          const newFiles = form.images.filter((_, i) => i !== idx);
+                          setImagePreviews(newPreviews);
+                          setForm({ ...form, images: newFiles });
+                        }}
+                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button type="submit" disabled={submitting} className="bg-primary">
+                {submitting ? 'Saving...' : editing ? 'Update Product' : 'Create Product'}
+              </Button>
+              {editing && (
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  Cancel
+                </Button>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Products List */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Existing Products</h2>
+        <div className="space-y-3">
+          {products.map((product) => (
+            <div key={product._id} className="bg-white rounded-lg shadow p-3 flex items-center gap-3">
+              <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                {product.images?.[0] ? (
+                  <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">No img</div>
                 )}
               </div>
-              <div className="flex gap-2">
-                <Button type="submit" className="bg-primary">{editing ? 'Update' : 'Create'}</Button>
-                {editing && <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>}
+              <div className="flex-1 min-w-0">
+                <div className="font-medium truncate">{product.name}</div>
+                <div className="text-sm text-primary">₵{product.price.toLocaleString()}</div>
+                <div className="text-xs text-gray-500">Stock: {product.stock}</div>
               </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Existing Products</h2>
-          <div className="space-y-2 max-h-[600px] overflow-y-auto">
-            {products.map((p: Product) => (
-              <div key={p._id} className="flex justify-between items-center bg-white p-3 rounded shadow">
-                <div className="flex items-center gap-3">
-                  {p.images?.[0] && (
-                    <img 
-                      src={p.images[0]} 
-                      alt={p.name} 
-                      className="w-12 h-12 object-cover rounded" 
-                    />
-                  )}
-                  <div>
-                    <div className="font-medium">{p.name}</div>
-                    <div className="text-sm">${p.price}</div>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={() => {
-                      setEditing(p._id);
-                      setForm({
-                        name: p.name,
-                        description: p.description,
-                        price: p.price.toString(),
-                        discountPrice: p.discountPrice?.toString() || '',
-                        stock: p.stock.toString(),
-                        category: typeof p.category === 'object' ? p.category._id : p.category,
-                        brand: p.brand || '',
-                        images: []
-                      });
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button size="sm" variant="destructive" onClick={() => deleteProduct(p._id)}>Delete</Button>
-                </div>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => {
+                    setEditing(product._id);
+                    setForm({
+                      name: product.name,
+                      description: product.description,
+                      price: product.price.toString(),
+                      discountPrice: product.discountPrice?.toString() || '',
+                      stock: product.stock.toString(),
+                      category: typeof product.category === 'object' ? product.category._id : product.category,
+                      brand: product.brand || '',
+                      images: [],
+                    });
+                    setImagePreviews([]);
+                  }}
+                  className="p-2 text-blue-600"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button onClick={() => deleteProduct(product._id)} className="p-2 text-red-600">
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+          {products.length === 0 && <div className="text-center text-gray-500 py-6">No products yet. Create your first product above.</div>}
         </div>
       </div>
     </div>
