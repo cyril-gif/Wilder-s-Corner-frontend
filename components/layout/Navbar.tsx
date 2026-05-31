@@ -9,7 +9,7 @@ import useAuthStore from '@/store/authStore';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MobileNav from './MobileNav';
-import Image from 'next/image'; // ← add this
+import Image from 'next/image';
 
 export default function Navbar() {
   const { items } = useCartStore();
@@ -27,17 +27,17 @@ export default function Navbar() {
     <header className="bg-primary sticky top-0 z-50 shadow-md">
       <div className="px-3 py-2">
         <div className="flex items-center justify-between gap-2">
-          {/* Left side: Hamburger + Logo + Text */}
+          {/* Left: hamburger + logo + name */}
           <div className="flex items-center gap-2 shrink-0">
             <MobileNav />
             <Link href="/" className="flex items-center gap-1 sm:gap-2">
-              {/* Logo image – place a small logo in /public/logo-icon.png */}
-              <div className="relative w-6 h-6 sm:w-8 sm:h-8">
+              <div className="relative w-7 h-7 sm:w-8 sm:h-8">
                 <Image
-                  src="/logo-icon.png"   // or use an emoji/icon if no image
-                  alt="Logo"
+                  src="/logo.png"
+                  alt="Wilder's Corner Logo"
                   fill
                   className="object-contain"
+                  priority
                 />
               </div>
               <span className="text-white font-bold text-base sm:text-lg whitespace-nowrap">
@@ -46,7 +46,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Search bar */}
+          {/* Search */}
           <form onSubmit={handleSearch} className="flex-1 max-w-[160px] sm:max-w-md">
             <div className="relative">
               <Input
