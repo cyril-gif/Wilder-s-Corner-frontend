@@ -112,15 +112,29 @@ export default function AdminProducts() {
     }
   };
 
-  const deleteProduct = async (id: string) => {
-    if (!confirm('Delete this product?')) return;
-    try {
-      await axios.delete(`/admin/products/₵{id}`);
-      fetchProducts();
-    } catch (err) {
-      alert('Delete failed');
+const deleteProduct = async (id: string) => {
+  if (!confirm('Delete this product?')) return;
+  
+  try {
+    console.log('Deleting product:', id);
+    const response = await axios.delete(`/admin/products/${id}`);
+    console.log('Delete response:', response.data);
+    
+    if (response.data.success) {
+      // Remove from local state
+      setProducts(prev => prev.filter(p => p._id !== id));
+      alert('Product deleted successfully');
+    } else {
+      alert(response.data.message || 'Delete failed');
     }
-  };
+  } catch (err: any) {
+    console.error('Delete error:', err);
+    console.error('Error response:', err.response?.data);
+    alert(err.response?.data?.message || 'Delete failed. Please check console.');
+  }
+};
+
+
 
   if (loading) return <div className="text-center py-10">Loading products...</div>;
 
