@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,6 +10,7 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Chrome, Facebook } from 'lucide-react';
 import useAuthStore from '@/store/authStore';
 
 const loginSchema = z.object({
@@ -39,10 +41,61 @@ function LoginForm() {
     }
   };
 
+  const handleSocialLogin = async (provider: string) => {
+    try {
+      const result = await signIn(provider, { callbackUrl: redirect, redirect: false });
+      if (result?.error) {
+        setError('Social login failed. Please try again.');
+      } else if (result?.url) {
+        router.push(result.url);
+      }
+    } catch (err) {
+      setError('Social login failed. Please try again.');
+    }
+  };
+
   return (
     <div className="bg-white p-8 rounded-lg shadow-card w-full max-w-md">
-      <h1 className="text-2xl font-bold text-center mb-6">Login</h1>
-      {error && <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm">{error}</div>}
+      <h1 className="text-2xl font-bold text-center mb-6">Welcome Back</h1>
+      
+      {error && (
+        <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">
+          {error}
+        </div>
+      )}
+      
+      {/* Social Login Buttons */}
+      <div className="space-y-3 mb-6">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full flex items-center justify-center gap-2"
+          onClick={() => handleSocialLogin('google')}
+        >
+          <Chrome className="h-5 w-5" />
+          Continue with Google
+        </Button>
+        
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full flex items-center justify-center gap-2"
+          onClick={() => handleSocialLogin('facebook')}
+        >
+          <Facebook className="h-5 w-5 text-blue-600" />
+          Continue with Facebook
+        </Button>
+      </div>
+      
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+        </div>
+      </div>
+      
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <Label htmlFor="email">Email</Label>
@@ -55,11 +108,15 @@ function LoginForm() {
           {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
         </div>
         <Button type="submit" className="w-full bg-primary" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Login'}
+          {isLoading ? 'Logging in...' : 'Sign In'}
         </Button>
       </form>
+      
       <p className="text-center text-sm text-gray-600 mt-4">
-        Don't have an account? <Link href={`/auth/register?redirect=₵{encodeURIComponent(redirect)}`} className="text-primary hover:underline">Register</Link>
+        Don't have an account?{' '}
+        <Link href={`/auth/register?redirect=${encodeURIComponent(redirect)}`} className="text-primary hover:underline">
+          Create account
+        </Link>
       </p>
     </div>
   );
