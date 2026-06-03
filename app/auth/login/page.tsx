@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Chrome, Facebook } from 'lucide-react';
+import { Chrome } from 'lucide-react';
 import useAuthStore from '@/store/authStore';
 
 const loginSchema = z.object({
@@ -41,16 +41,16 @@ function LoginForm() {
     }
   };
 
-  const handleSocialLogin = async (provider: string) => {
+  const handleGoogleLogin = async () => {
     try {
-      const result = await signIn(provider, { callbackUrl: redirect, redirect: false });
+      const result = await signIn('google', { callbackUrl: redirect, redirect: false });
       if (result?.error) {
-        setError('Social login failed. Please try again.');
+        setError('Google login failed. Please try again.');
       } else if (result?.url) {
         router.push(result.url);
       }
     } catch (err) {
-      setError('Social login failed. Please try again.');
+      setError('Google login failed. Please try again.');
     }
   };
 
@@ -64,26 +64,16 @@ function LoginForm() {
         </div>
       )}
       
-      {/* Social Login Buttons */}
-      <div className="space-y-3 mb-6">
+      {/* Google Login Button */}
+      <div className="mb-6">
         <Button
           type="button"
           variant="outline"
           className="w-full flex items-center justify-center gap-2"
-          onClick={() => handleSocialLogin('google')}
+          onClick={handleGoogleLogin}
         >
           <Chrome className="h-5 w-5" />
           Continue with Google
-        </Button>
-        
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full flex items-center justify-center gap-2"
-          onClick={() => handleSocialLogin('facebook')}
-        >
-          <Facebook className="h-5 w-5 text-blue-600" />
-          Continue with Facebook
         </Button>
       </div>
       
@@ -131,4 +121,3 @@ export default function LoginPage() {
     </Suspense>
   );
 }
-

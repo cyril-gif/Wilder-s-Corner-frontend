@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,6 +10,7 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Chrome } from 'lucide-react';
 import useAuthStore from '@/store/authStore';
 
 const registerSchema = z.object({
@@ -41,10 +43,50 @@ function RegisterForm() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signIn('google', { callbackUrl: redirect, redirect: false });
+      if (result?.error) {
+        setError('Google login failed. Please try again.');
+      } else if (result?.url) {
+        router.push(result.url);
+      }
+    } catch (err) {
+      setError('Google login failed. Please try again.');
+    }
+  };
+
   return (
     <div className="bg-white p-8 rounded-lg shadow-card w-full max-w-md">
-      <h1 className="text-2xl font-bold text-center mb-6">Register</h1>
-      {error && <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm">{error}</div>}
+      <h1 className="text-2xl font-bold text-center mb-6">Create Account</h1>
+      
+      {error && (
+        <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">
+          {error}
+        </div>
+      )}
+      
+      <div className="mb-6">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full flex items-center justify-center gap-2"
+          onClick={handleGoogleLogin}
+        >
+          <Chrome className="h-5 w-5" />
+          Continue with Google
+        </Button>
+      </div>
+      
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">Or sign up with email</span>
+        </div>
+      </div>
+      
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <Label htmlFor="name">Full Name</Label>
@@ -66,11 +108,15 @@ function RegisterForm() {
           <Input id="phone" type="tel" {...register('phone')} />
         </div>
         <Button type="submit" className="w-full bg-primary" disabled={isLoading}>
-          {isLoading ? 'Registering...' : 'Register'}
+          {isLoading ? 'Creating account...' : 'Sign Up'}
         </Button>
       </form>
+      
       <p className="text-center text-sm text-gray-600 mt-4">
-        Already have an account? <Link href={`/auth/login?redirect=₵{encodeURIComponent(redirect)}`} className="text-primary hover:underline">Login</Link>
+        Already have an account?{' '}
+        <Link href={`/auth/login?redirect=${encodeURIComponent(redirect)}`} className="text-primary hover:underline">
+          Sign In
+        </Link>
       </p>
     </div>
   );
@@ -84,4 +130,4 @@ export default function RegisterPage() {
       </div>
     </Suspense>
   );
-}
+}s
