@@ -3,8 +3,6 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from "axios";
 
-<<<<<<< HEAD
-// Extend the built-in session types
 declare module "next-auth" {
   interface Session {
     user: {
@@ -20,8 +18,6 @@ declare module "next-auth" {
   }
 }
 
-=======
->>>>>>> 33ffe284153b2fb358e8a84d926d8ab47b59b2fc
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -88,15 +84,10 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             provider: account.provider,
           });
-<<<<<<< HEAD
           if (res.data.success) {
             return true;
           }
           return false;
-=======
-          user.id = res.data.data._id;
-          return true;
->>>>>>> 33ffe284153b2fb358e8a84d926d8ab47b59b2fc
         } catch (error) {
           console.error("Social login error:", error);
           return false;
@@ -117,7 +108,5 @@ export const authOptions: NextAuthOptions = {
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
-<<<<<<< HEAD
 
-=======
->>>>>>> 33ffe284153b2fb358e8a84d926d8ab47b59b2fc
+

@@ -130,7 +130,4 @@ export default function RegisterPage() {
     </Suspense>
   );
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> 33ffe284153b2fb358e8a84d926d8ab47b59b2fc
