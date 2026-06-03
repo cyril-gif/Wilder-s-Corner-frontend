@@ -9,21 +9,20 @@ const api = axios.create({
 export default api;
 
 export const fetchProducts = async (params?: any) => {
-  const { data } = await api.get('/products', { params });
+  const queryParams = new URLSearchParams();
+  
+  if (params?.category) queryParams.append('category', params.category);
+  if (params?.sort) queryParams.append('sort', params.sort);
+  if (params?.page) queryParams.append('page', params.page);
+  if (params?.limit) queryParams.append('limit', params.limit);
+  if (params?.search) queryParams.append('search', params.search);
+  if (params?.minPrice) queryParams.append('minPrice', params.minPrice);
+  if (params?.maxPrice) queryParams.append('maxPrice', params.maxPrice);
+  if (params?.isFlashSale) queryParams.append('isFlashSale', 'true');
+  if (params?.isFeatured) queryParams.append('isFeatured', 'true');
+  
+  const url = `/products${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+  const { data } = await api.get(url);
   return data.data;
 };
 
-export const fetchProductById = async (id: string) => {
-  const { data } = await api.get(`/products/${id}`);
-  return data.data;
-};
-
-export const fetchCategories = async () => {
-  const { data } = await api.get('/categories');
-  return data.data;
-};
-
-export const createOrder = async (orderData: any) => {
-  const { data } = await api.post('/orders', orderData);
-  return data.data;
-};
