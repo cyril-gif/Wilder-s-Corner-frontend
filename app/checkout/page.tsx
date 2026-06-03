@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,7 @@ import useCartStore from '@/store/cartStore';
 import useAuthStore from '@/store/authStore';
 import axios from '@/lib/api';
 
-// Ghana regions and cities (same as before)
+// Ghana regions and cities data
 const regionsWithCities: Record<string, string[]> = {
   'Greater Accra': ['Accra', 'Tema', 'Adenta', 'Madina', 'Ashaiman', 'Dansoman', 'Dzorwulu', 'Lapaz', 'Achimota', 'Osu'],
   'Ashanti': ['Kumasi', 'Obuasi', 'Tafo', 'Ejisu', 'Mampong', 'Konongo', 'Offinso', 'Agogo', 'Bekwai'],
@@ -32,19 +32,25 @@ const regionsWithCities: Record<string, string[]> = {
 };
 const allRegions = Object.keys(regionsWithCities);
 
-// Paystack component (calls callback on success)
+// Paystack button component - only renders on client side
 function PaystackButton({ email, amount, orderId, onSuccess, onClose }: any) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const handlePayment = () => {
+    if (!isMounted) return;
     setIsLoading(true);
     const script = document.createElement('script');
     script.src = 'https://js.paystack.co/v1/inline.js';
     script.onload = () => {
       const pesewas = Math.round(amount * 100);
       if (isNaN(pesewas) || pesewas <= 0) {
-        alert('Invalid amount');
+        alert('Invalid payment amount');
         setIsLoading(false);
         return;
       }
@@ -67,6 +73,8 @@ function PaystackButton({ email, amount, orderId, onSuccess, onClose }: any) {
     document.body.appendChild(script);
   };
 
+  if (!isMounted) return null;
+
   return (
     <Button
       onClick={handlePayment}
@@ -80,7 +88,8 @@ function PaystackButton({ email, amount, orderId, onSuccess, onClose }: any) {
 
 function CheckoutContent() {
   const router = useRouter();
-  const { items, getSubtotal } = useCartStore();
+  const searchParams = useSearchParams();
+  const { items, getSubtotal, clearCart } = useCartStore();
   const { user } = useAuthStore();
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('cash_on_delivery');
@@ -96,16 +105,10 @@ function CheckoutContent() {
   const shipping = subtotal > 500 ? 0 : 50;
   const total = subtotal + shipping;
 
-  // Redirect if not logged in or cart empty (render guard)
   useEffect(() => {
+    if (items.length === 0) router.push('/cart');
     if (!user) router.push(`/auth/login?redirect=${encodeURIComponent('/checkout')}`);
-  }, [user, router]);
-
-  if (items.length === 0) {
-    router.push('/cart');
-    return null;
-  }
-  if (!user) return null;
+  }, [items.length, user, router]);
 
   const validateAddress = () => {
     const newErrors: Record<string, string> = {};
@@ -134,37 +137,27 @@ function CheckoutContent() {
   };
 
   const handleAddressSubmit = (e: React.FormEvent) => { e.preventDefault(); if (validateAddress()) setStep(2); };
-
   const handleCOD = async () => {
     setLoading(true);
     try {
-      const order = await createOrder();
-      // Redirect to orders page without clearing cart here – we will clear on orders page if needed
-      router.push(`/orders?success=true&orderId=${order._id}`);
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Order failed');
-    } finally {
-      setLoading(false);
-    }
+      await createOrder();
+      clearCart();
+      router.push('/orders?success=true');
+    } catch (err: any) { alert(err.response?.data?.message || 'Order failed'); }
+    finally { setLoading(false); }
   };
-
   const handlePaystackFlow = async () => {
     setLoading(true);
     try {
       const order = await createOrder();
       setCreatedOrderId(order._id);
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Order creation failed');
-    } finally {
-      setLoading(false);
-    }
+    } catch (err: any) { alert(err.response?.data?.message || 'Order creation failed'); }
+    finally { setLoading(false); }
   };
-
   const onPaystackSuccess = () => {
-    // Redirect to orders page without clearing cart here
-    router.push(`/orders?payment=success&orderId=${createdOrderId}`);
+    clearCart();
+    router.push('/orders?payment=success');
   };
-
   const onPaystackClose = () => setCreatedOrderId(null);
 
   const updateAddress = (field: string, value: string) => {
@@ -174,11 +167,11 @@ function CheckoutContent() {
   };
 
   const availableCities = address.region ? regionsWithCities[address.region] || [] : [];
+  if (items.length === 0 || !user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-6xl">
-        {/* Step indicator (same as before) */}
         <div className="mb-10">
           <div className="flex items-center justify-center gap-2 md:gap-4">
             {[1,2,3].map(i => (
@@ -232,7 +225,6 @@ function CheckoutContent() {
                   <div><div className="flex justify-between mb-2"><h3 className="font-semibold">Shipping address</h3><button onClick={() => setStep(1)} className="text-primary text-sm">Edit</button></div><div className="bg-gray-50 p-4 rounded-xl text-gray-700 text-sm">{address.fullName}<br />{address.addressLine1}{address.addressLine2 && <>, {address.addressLine2}</>}<br />{address.city}, {address.region} {address.postalCode}<br />{address.phone}</div></div>
                   <div><div className="flex justify-between mb-2"><h3 className="font-semibold">Payment method</h3><button onClick={() => setStep(2)} className="text-primary text-sm">Edit</button></div><div className="bg-gray-50 p-4 rounded-xl text-gray-700 text-sm">{paymentMethod === 'cash_on_delivery' ? 'Cash on delivery' : 'Card (Paystack)'}</div></div>
                   <div className="border-t pt-4"><div className="flex justify-between text-gray-600 mb-2"><span>Subtotal</span><span>₵{subtotal.toLocaleString()}</span></div><div className="flex justify-between text-gray-600 mb-2"><span>Shipping</span><span>{shipping === 0 ? 'Free' : `₵${shipping.toLocaleString()}`}</span></div><div className="flex justify-between text-xl font-bold mt-3 pt-3 border-t"><span>Total</span><span>₵{total.toLocaleString()}</span></div></div>
-
                   {paymentMethod === 'cash_on_delivery' ? (
                     <Button onClick={handleCOD} disabled={loading} className="w-full bg-primary py-3">{loading ? 'Placing order...' : 'Place order (Cash on delivery)'}</Button>
                   ) : (
@@ -256,5 +248,9 @@ function CheckoutContent() {
 }
 
 export default function CheckoutPage() {
-  return <Suspense fallback={<div className="p-8 text-center">Loading checkout...</div>}><CheckoutContent /></Suspense>;
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading checkout...</div>}>
+      <CheckoutContent />
+    </Suspense>
+  );
 }
