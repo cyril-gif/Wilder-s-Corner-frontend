@@ -10,7 +10,6 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Chrome } from 'lucide-react';
 import useAuthStore from '@/store/authStore';
 
 const loginSchema = z.object({
@@ -72,7 +71,7 @@ function LoginForm() {
           className="w-full flex items-center justify-center gap-2"
           onClick={handleGoogleLogin}
         >
-          <Chrome className="h-5 w-5" />
+          <span className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">G</span>
           Continue with Google
         </Button>
       </div>
