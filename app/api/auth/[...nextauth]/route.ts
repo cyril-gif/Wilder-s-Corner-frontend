@@ -3,21 +3,6 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from "axios";
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      email: string;
-      name: string;
-    }
-  }
-  interface User {
-    id: string;
-    email: string;
-    name: string;
-  }
-}
-
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -56,15 +41,11 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
-      }
-      if (account) {
-        token.accessToken = account.access_token;
-        token.provider = account.provider;
       }
       return token;
     },
@@ -75,25 +56,6 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name as string;
       }
       return session;
-    },
-    async signIn({ user, account }) {
-      if (account?.provider === "google") {
-        try {
-          const res = await axios.post(`${process.env.NEXTAUTH_URL}/api/auth/social-login`, {
-            email: user.email,
-            name: user.name,
-            provider: account.provider,
-          });
-          if (res.data.success) {
-            return true;
-          }
-          return false;
-        } catch (error) {
-          console.error("Social login error:", error);
-          return false;
-        }
-      }
-      return true;
     },
   },
   pages: {
@@ -108,5 +70,3 @@ export const authOptions: NextAuthOptions = {
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
-
-
