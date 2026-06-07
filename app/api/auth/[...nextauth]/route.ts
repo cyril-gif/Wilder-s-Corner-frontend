@@ -12,7 +12,7 @@ export const authOptions = {
     signIn: "/auth/login",
   },
   callbacks: {
-    async redirect({ baseUrl }) {
+    async redirect({ baseUrl }: { baseUrl: string }) {
       // Always redirect to home page after login
       return baseUrl;
     },
