@@ -41,17 +41,15 @@ function LoginForm() {
   };
 
   const handleGoogleLogin = async () => {
-    try {
-      const result = await signIn('google', { callbackUrl: redirect, redirect: false });
-      if (result?.error) {
-        setError('Google login failed. Please try again.');
-      } else if (result?.url) {
-        router.push(result.url);
-      }
-    } catch (err) {
-      setError('Google login failed. Please try again.');
-    }
-  };
+  try {
+    await signIn("google", { 
+      callbackUrl: redirect || "/",
+      redirect: true 
+    });
+  } catch (err) {
+    setError("Google login failed. Please try again.");
+  }
+};
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-card w-full max-w-md">
