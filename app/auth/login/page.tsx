@@ -41,15 +41,12 @@ function LoginForm() {
   };
 
   const handleGoogleLogin = async () => {
-  try {
-    await signIn("google", { 
-      callbackUrl: redirect || "/",
-      redirect: true 
-    });
-  } catch (err) {
-    setError("Google login failed. Please try again.");
-  }
-};
+    try {
+      await signIn('google', { callbackUrl: redirect, redirect: true });
+    } catch (err) {
+      setError('Google login failed. Please try again.');
+    }
+  };
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-card w-full max-w-md">
@@ -118,4 +115,3 @@ export default function LoginPage() {
     </Suspense>
   );
 }
-
