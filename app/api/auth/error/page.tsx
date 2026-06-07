@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
@@ -12,19 +11,15 @@ function ErrorContent() {
   const getErrorMessage = () => {
     switch (error) {
       case 'OAuthSignin':
-        return 'There was an error signing in with the provider. Please try again.';
+        return 'Error starting Google sign in. Please try again.';
       case 'OAuthCallback':
-        return 'There was an error processing your sign in. Please try again.';
+        return 'Error completing Google sign in. Please try again.';
       case 'OAuthCreateAccount':
-        return 'Could not create an account. Please try a different method.';
-      case 'EmailCreateAccount':
-        return 'Could not create an account with this email.';
-      case 'Callback':
-        return 'There was an error during sign in. Please try again.';
-      case 'Default':
-        return 'An unexpected error occurred. Please try again.';
+        return 'Could not create account. Please try a different method.';
+      case 'AccessDenied':
+        return 'Access denied. Please check your Google account permissions.';
       default:
-        return 'Authentication failed. Please try again.';
+        return `Authentication failed: ${error || 'Unknown error'}`;
     }
   };
 
@@ -34,11 +29,11 @@ function ErrorContent() {
         <h1 className="text-2xl font-bold text-red-700 mb-4">Authentication Error</h1>
         <p className="text-gray-700 mb-6">{getErrorMessage()}</p>
         <div className="flex gap-4 justify-center">
-          <Link href="/auth/login">
-            <Button className="bg-primary">Back to Login</Button>
+          <Link href="/auth/login" className="bg-primary text-white px-4 py-2 rounded">
+            Back to Login
           </Link>
-          <Link href="/">
-            <Button variant="outline">Go Home</Button>
+          <Link href="/" className="border px-4 py-2 rounded">
+            Go Home
           </Link>
         </div>
       </div>
@@ -53,4 +48,3 @@ export default function AuthErrorPage() {
     </Suspense>
   );
 }
-
