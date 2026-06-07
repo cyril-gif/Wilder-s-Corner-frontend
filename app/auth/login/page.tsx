@@ -4,47 +4,20 @@ import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import useAuthStore from '@/store/authStore';
-
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
-
-type LoginForm = z.infer<typeof loginSchema>;
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
-  const { login, isLoading } = useAuthStore();
   const [error, setError] = useState('');
-
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
-  });
-
-  const onSubmit = async (data: LoginForm) => {
-    setError('');
-    try {
-      await login(data.email, data.password);
-      router.push(redirect);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed');
-    }
-  };
 
   const handleGoogleLogin = async () => {
     try {
-      await signIn('google', { callbackUrl: redirect, redirect: true });
+      // Sign in with Google and redirect to the intended page
+      await signIn("google", { callbackUrl: redirect });
     } catch (err) {
-      setError('Google login failed. Please try again.');
+      setError("Google login failed. Please try again.");
     }
   };
 
@@ -58,45 +31,14 @@ function LoginForm() {
         </div>
       )}
       
-      {/* Google Login Button */}
-      <div className="mb-6">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full flex items-center justify-center gap-2"
-          onClick={handleGoogleLogin}
-        >
-          <span className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">G</span>
-          Continue with Google
-        </Button>
-      </div>
+      <Button
+        onClick={handleGoogleLogin}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2"
+      >
+        Continue with Google
+      </Button>
       
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300"></div>
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">Or continue with email</span>
-        </div>
-      </div>
-      
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" {...register('email')} />
-          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
-        </div>
-        <div>
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" {...register('password')} />
-          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
-        </div>
-        <Button type="submit" className="w-full bg-primary" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Sign In'}
-        </Button>
-      </form>
-      
-      <p className="text-center text-sm text-gray-600 mt-4">
+      <p className="text-center text-sm text-gray-600 mt-6">
         Don't have an account?{' '}
         <Link href={`/auth/register?redirect=${encodeURIComponent(redirect)}`} className="text-primary hover:underline">
           Create account
