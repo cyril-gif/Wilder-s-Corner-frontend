@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, Suspense, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from '@/lib/api';
 import ProductCard from '@/components/products/ProductCard';
@@ -11,36 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 function CategoryContent() {
   const { slug } = useParams();
   const [sort, setSort] = useState('-createdAt');
-  const [categoryId, setCategoryId] = useState<string | null>(null);
 
-  // Fetch all categories to get the ID from slug
-  const { data: categories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const { data } = await axios.get('/categories');
-      return data.data;
-    },
-  });
-
-  // Find category ID based on slug
-  useEffect(() => {
-    if (categories && slug) {
-      const found = categories.find((cat: any) => cat.slug === slug);
-      if (found) {
-        setCategoryId(found._id);
-      }
-    }
-  }, [categories, slug]);
-
-  // Fetch products for this category
+  // Fetch products using the slug directly (backend converts slug to ID)
   const { data, isLoading, error } = useQuery({
-    queryKey: ['category-products', categoryId, sort],
+    queryKey: ['category-products', slug, sort],
     queryFn: async () => {
-      if (!categoryId) return { products: [] };
-      const { data } = await axios.get(`/products?category=${categoryId}&sort=${sort}`);
+      // Pass the slug directly to the API
+      const { data } = await axios.get(`/products?category=${slug}&sort=${sort}&limit=50`);
       return data.data;
     },
-    enabled: !!categoryId,
   });
 
   const products = data?.products || [];
@@ -50,10 +29,6 @@ function CategoryContent() {
     ?.split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ') || 'Category';
-
-  if (!categories) {
-    return <div className="p-8">Loading categories...</div>;
-  }
 
   if (isLoading) {
     return (
@@ -69,6 +44,7 @@ function CategoryContent() {
   }
 
   if (error) {
+    console.error('Category error:', error);
     return (
       <div className="text-center py-12">
         <p className="text-red-500">Failed to load products. Please try again.</p>
