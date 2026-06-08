@@ -1,19 +1,16 @@
 'use client';
 
 import { useState, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
-import { Search, Package, Truck, Clock, CheckCircle, MapPin, Calendar } from 'lucide-react';
+import { Search, Package, Truck, Clock, CheckCircle, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import axios from '@/lib/api';
-import useAuthStore from '@/store/authStore';
 
 interface OrderStatus {
   _id: string;
   status: string;
   createdAt: string;
-  estimatedDelivery?: string;
   orderItems: Array<{
     name: string;
     qty: number;
@@ -37,8 +34,6 @@ const statusSteps = [
 ];
 
 function TrackOrderContent() {
-  const router = useRouter();
-  const { user } = useAuthStore();
   const [orderId, setOrderId] = useState('');
   const [order, setOrder] = useState<OrderStatus | null>(null);
   const [loading, setLoading] = useState(false);
@@ -51,25 +46,17 @@ function TrackOrderContent() {
       return;
     }
 
-    // If not logged in, redirect to login page
-    if (!user) {
-      router.push(`/auth/login?redirect=/track-order&orderId=${orderId}`);
-      return;
-    }
-
     setLoading(true);
     setError('');
     setOrder(null);
 
     try {
-      const res = await axios.get(`/orders/${orderId}`);
+      // Use the public track endpoint
+      const res = await axios.get(`/orders/track/${orderId}`);
       setOrder(res.data.data);
     } catch (err: any) {
       if (err.response?.status === 404) {
         setError('Order not found. Please check your order ID.');
-      } else if (err.response?.status === 401) {
-        setError('Please login to track this order.');
-        setTimeout(() => router.push('/auth/login?redirect=/track-order'), 2000);
       } else {
         setError('Failed to fetch order. Please try again.');
       }
@@ -88,11 +75,10 @@ function TrackOrderContent() {
       <h1 className="text-2xl font-bold mb-2">Track Your Order</h1>
       <p className="text-gray-500 mb-6">Enter your order ID to see the current status</p>
 
-      {/* Search Form */}
       <form onSubmit={handleTrack} className="flex gap-2 mb-8">
         <Input
           type="text"
-          placeholder="Enter order ID (e.g., 65a1b2c3d4e5f67890abcdef)"
+          placeholder="Enter order ID"
           value={orderId}
           onChange={(e) => setOrderId(e.target.value)}
           className="flex-1"
@@ -103,28 +89,14 @@ function TrackOrderContent() {
         </Button>
       </form>
 
-      {/* Not Logged In Message */}
-      {!user && !loading && !order && !error && (
-        <div className="text-center py-12 bg-yellow-50 rounded-lg border border-yellow-200">
-          <Package className="h-16 w-16 mx-auto text-yellow-500 mb-3" />
-          <p className="text-gray-700 mb-2">Please login to track your order</p>
-          <Button onClick={() => router.push('/auth/login?redirect=/track-order')} className="bg-primary mt-2">
-            Login Now
-          </Button>
-        </div>
-      )}
-
-      {/* Error Message */}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6">
           {error}
         </div>
       )}
 
-      {/* Order Details */}
       {order && (
         <div className="space-y-6">
-          {/* Status Tracker */}
           <Card>
             <CardHeader>
               <CardTitle>Order Status</CardTitle>
@@ -151,7 +123,6 @@ function TrackOrderContent() {
                     );
                   })}
                 </div>
-                {/* Progress Bar */}
                 <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 -z-10">
                   <div 
                     className="h-full bg-primary transition-all duration-500"
@@ -162,7 +133,6 @@ function TrackOrderContent() {
             </CardContent>
           </Card>
 
-          {/* Order Info */}
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -213,7 +183,6 @@ function TrackOrderContent() {
             </Card>
           </div>
 
-          {/* Delivery Estimate */}
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="p-4 flex items-center gap-3">
               <Truck className="h-8 w-8 text-primary" />
