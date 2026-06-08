@@ -1,69 +1,64 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchProducts } from '@/lib/api';
+import axios from '@/lib/api';
 import ProductCard from '@/components/products/ProductCard';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function CategoryContent() {
   const { slug } = useParams();
   const [sort, setSort] = useState('-createdAt');
-  const [page, setPage] = useState(1);
   const [categoryId, setCategoryId] = useState<string | null>(null);
 
-  // First, fetch all categories to get the category ID from slug
-  const { data: categoriesData } = useQuery({
+  // Fetch all categories to get the ID from slug
+  const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const res = await fetch('/api/categories');
-      const data = await res.json();
+      const { data } = await axios.get('/categories');
       return data.data;
     },
   });
 
-  // Find the category ID based on the slug
+  // Find category ID based on slug
   useEffect(() => {
-    if (categoriesData && slug) {
-      const category = categoriesData.find((cat: any) => cat.slug === slug);
-      if (category) {
-        setCategoryId(category._id);
+    if (categories && slug) {
+      const found = categories.find((cat: any) => cat.slug === slug);
+      if (found) {
+        setCategoryId(found._id);
       }
     }
-  }, [categoriesData, slug]);
+  }, [categories, slug]);
 
-  // Fetch products filtered by category
+  // Fetch products for this category
   const { data, isLoading, error } = useQuery({
-    queryKey: ['products', categoryId, sort, page],
-    queryFn: () => fetchProducts({ category: categoryId, sort, page, limit: 12 }),
-    enabled: !!categoryId, // Only fetch when categoryId is available
+    queryKey: ['category-products', categoryId, sort],
+    queryFn: async () => {
+      if (!categoryId) return { products: [] };
+      const { data } = await axios.get(`/products?category=${categoryId}&sort=${sort}`);
+      return data.data;
+    },
+    enabled: !!categoryId,
   });
 
   const products = data?.products || [];
-  const pagination = data?.pagination;
 
+  // Format category name for display
   const categoryName = (slug as string)
     ?.split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ') || 'Category';
 
-  if (!categoryId && categoriesData) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">Category not found</p>
-      </div>
-    );
+  if (!categories) {
+    return <div className="p-8">Loading categories...</div>;
   }
 
   if (isLoading) {
     return (
       <div>
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">{categoryName}</h1>
-          <div className="w-40 h-10 bg-gray-200 rounded animate-pulse"></div>
-        </div>
+        <h1 className="text-2xl font-bold mb-6">{categoryName}</h1>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (
             <Skeleton key={i} className="h-80 w-full" />
@@ -104,38 +99,14 @@ function CategoryContent() {
 
       {products.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">No products found in this category.</p>
+          <p className="text-gray-500">No products found in {categoryName}.</p>
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {products.map((product: any) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
-          </div>
-          
-          {pagination && pagination.pages > 1 && (
-            <div className="flex justify-center gap-2 mt-8">
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-4 py-2 border rounded-md disabled:opacity-50 hover:bg-gray-50"
-              >
-                Previous
-              </button>
-              <span className="px-4 py-2">
-                Page {page} of {pagination.pages}
-              </span>
-              <button
-                onClick={() => setPage(p => Math.min(pagination.pages, p + 1))}
-                disabled={page === pagination.pages}
-                className="px-4 py-2 border rounded-md disabled:opacity-50 hover:bg-gray-50"
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {products.map((product: any) => (
+            <ProductCard key={product._id} product={product} />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -143,9 +114,8 @@ function CategoryContent() {
 
 export default function CategoryPage() {
   return (
-    <Suspense fallback={<div className="p-8">Loading category...</div>}>
+    <Suspense fallback={<div className="p-8">Loading...</div>}>
       <CategoryContent />
     </Suspense>
   );
 }
-
