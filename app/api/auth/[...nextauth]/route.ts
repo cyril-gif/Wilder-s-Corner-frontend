@@ -12,7 +12,7 @@ export const authOptions = {
     signIn: "/auth/login",
   },
   callbacks: {
-    async redirect({ baseUrl }) {
+    async redirect({ baseUrl }: { baseUrl: string }) {
       // Redirect to our custom callback page after Google auth
       return `${baseUrl}/auth/callback`;
     },
