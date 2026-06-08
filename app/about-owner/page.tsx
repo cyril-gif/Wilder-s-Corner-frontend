@@ -15,12 +15,12 @@ export default function AboutOwnerPage() {
           <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-white shadow-lg mb-4">
             <Image
               src="/owner.jpg"
-              alt="Pascal Lantam Gbate - Founder"
+              alt="Margaret Efia Essien - Founder"
               fill
               className="object-cover"
             />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold">Pascal Lantam Gbate</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Margaret Efia Essien</h1>
           <p className="text-white/90 mt-1">Founder & CEO of Wilder's Corner</p>
         </div>
         
