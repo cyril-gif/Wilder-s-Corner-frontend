@@ -14,9 +14,11 @@ function LoginForm() {
 
   const handleGoogleLogin = async () => {
     try {
-      // Store the redirect URL in sessionStorage before Google login
-      sessionStorage.setItem('postLoginRedirect', redirect);
-      await signIn('google', { callbackUrl: '/auth/callback' });
+      // Pass the redirect URL directly to signIn
+      await signIn('google', { 
+        callbackUrl: redirect,
+        redirect: true 
+      });
     } catch (err) {
       setError('Google login failed. Please try again.');
     }
