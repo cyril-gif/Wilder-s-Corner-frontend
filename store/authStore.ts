@@ -24,7 +24,13 @@ const useAuthStore = create<AuthStore>((set) => ({
     set({ isLoading: true });
     try {
       const res = await api.post('/auth/login', { email, password });
-      set({ user: res.data.data, isLoading: false });
+      const { accessToken, refreshToken, ...userData } = res.data.data;
+      
+      // Store tokens in localStorage
+      if (accessToken) localStorage.setItem('accessToken', accessToken);
+      if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+      
+      set({ user: userData, isLoading: false });
     } catch (error) {
       set({ isLoading: false });
       throw error;
@@ -34,7 +40,12 @@ const useAuthStore = create<AuthStore>((set) => ({
     set({ isLoading: true });
     try {
       const res = await api.post('/auth/register', { name, email, password, phone });
-      set({ user: res.data.data, isLoading: false });
+      const { accessToken, refreshToken, ...userData } = res.data.data;
+      
+      if (accessToken) localStorage.setItem('accessToken', accessToken);
+      if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+      
+      set({ user: userData, isLoading: false });
     } catch (error) {
       set({ isLoading: false });
       throw error;
@@ -42,16 +53,21 @@ const useAuthStore = create<AuthStore>((set) => ({
   },
   logout: async () => {
     await api.post('/auth/logout');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     set({ user: null });
   },
   fetchMe: async () => {
     try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        set({ user: null });
+        return;
+      }
       const res = await api.get('/auth/me');
-      set({ user: res.data.data, isLoading: false });
-      return res.data.data;
+      set({ user: res.data.data });
     } catch {
-      set({ user: null, isLoading: false });
-      throw new Error('Not authenticated');
+      set({ user: null });
     }
   },
 }));
