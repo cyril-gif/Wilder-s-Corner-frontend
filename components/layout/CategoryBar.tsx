@@ -3,13 +3,13 @@
 import Link from 'next/link';
 
 const categories = [
-  { name: 'Shoes', slug: 'shoes', type: 'category' },
-  { name: 'Belts', slug: 'belts', type: 'category' },
-  { name: 'Hair Creams', slug: 'hair-creams', type: 'category' },
-  { name: 'Jewellery', slug: 'jewellery', type: 'category' },
-  { name: 'Bags', slug: 'bags', type: 'category' },
-  { name: 'Flash Sales', slug: 'flash-sales', type: 'flash' },
-  { name: 'New In', slug: 'new-in', type: 'new' },
+  { name: 'Shoes', slug: 'shoes' },
+  { name: 'Belts', slug: 'belts' },
+  { name: 'Hair Creams', slug: 'hair-creams' },
+  { name: 'Jewellery', slug: 'jewellery' },
+  { name: 'Bags', slug: 'bags' },
+  { name: 'Flash Sales', slug: 'flash-sales' },
+  { name: 'New In', slug: 'new-in' },
 ];
 
 export default function CategoryBar() {
@@ -19,20 +19,16 @@ export default function CategoryBar() {
         <div className="flex overflow-x-auto gap-6 py-3 whitespace-nowrap">
           {categories.map((cat) => {
             let href = '#';
-            if (cat.type === 'category') {
-              href = '/category/' + cat.slug;
-            } else if (cat.type === 'flash') {
+            if (cat.slug === 'flash-sales') {
               href = '/products?isFlashSale=true';
-            } else if (cat.type === 'new') {
+            } else if (cat.slug === 'new-in') {
               href = '/products?sort=-createdAt';
+            } else {
+              href = '/category/' + cat.slug;
             }
 
             return (
-              <Link
-                key={cat.slug}
-                href={href}
-                className="text-gray-700 hover:text-primary font-medium text-sm transition"
-              >
+              <Link key={cat.slug} href={href} className="text-gray-700 hover:text-primary font-medium text-sm transition">
                 {cat.name}
               </Link>
             );
