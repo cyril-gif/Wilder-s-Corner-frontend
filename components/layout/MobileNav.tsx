@@ -30,14 +30,6 @@ export default function MobileNav() {
 
   const categories = categoriesData?.length ? categoriesData : staticCategories;
 
-  const navItems = [
-    { href: '/', label: 'Home', icon: Home },
-    { href: '/products', label: 'Shop All', icon: Package },
-    { href: '/products?isFlashSale=true', label: 'Flash Sales', icon: ShoppingBag },
-    { href: '/track-order', label: 'Track Order', icon: Truck },
-    { href: '/about-owner', label: "Founder's Story", icon: BookOpen },
-  ];
-
   return (
     <Drawer.Root direction="left" open={open} onOpenChange={setOpen}>
       <Drawer.Trigger asChild>
@@ -75,29 +67,30 @@ export default function MobileNav() {
             <p className="text-xs text-gray-600 mb-2">
               Passionate about bringing quality products to Ghana at affordable prices.
             </p>
-            <Link 
-              href="/about-owner" 
-              onClick={() => setOpen(false)}
-              className="text-primary text-xs font-medium hover:underline inline-flex items-center gap-1"
-            >
-              Read full story →
-            </Link>
           </div>
           
           <nav className="space-y-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-3 text-gray-700 hover:text-primary py-2"
-              >
-                <item.icon className="h-5 w-5" />
-                <span>{item.label}</span>
-              </Link>
-            ))}
+            {/* 1. Home */}
+            <Link
+              href="/"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 text-gray-700 hover:text-primary py-2"
+            >
+              <Home className="h-5 w-5" />
+              <span>Home</span>
+            </Link>
 
-            {/* Shop by Category Dropdown */}
+            {/* 2. Shop All */}
+            <Link
+              href="/products"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 text-gray-700 hover:text-primary py-2"
+            >
+              <Package className="h-5 w-5" />
+              <span>Shop All</span>
+            </Link>
+
+            {/* 3. Shop by Category Dropdown */}
             <div>
               <button
                 onClick={() => setShopOpen(!shopOpen)}
@@ -125,48 +118,69 @@ export default function MobileNav() {
               )}
             </div>
 
-            <div className="border-t my-2 pt-2">
-              {user ? (
-                <>
-                  <Link
-                    href="/orders"
-                    onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 text-gray-700 hover:text-primary py-2"
-                  >
-                    <Package className="h-5 w-5" />
-                    <span>My Orders</span>
-                  </Link>
-                  {user.role === 'admin' && (
-                    <Link
-                      href="/admin/dashboard"
-                      onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 text-gray-700 hover:text-primary py-2"
-                    >
-                      <User className="h-5 w-5" />
-                      <span>Admin</span>
-                    </Link>
-                  )}
-                  <button
-                    onClick={() => {
-                      logout();
-                      setOpen(false);
-                    }}
-                    className="flex items-center gap-3 text-red-600 hover:text-red-700 py-2 w-full"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span>Logout</span>
-                  </button>
-                </>
-              ) : (
+            {/* 4. Flash Sales */}
+            <Link
+              href="/products?isFlashSale=true"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 text-gray-700 hover:text-primary py-2"
+            >
+              <ShoppingBag className="h-5 w-5" />
+              <span>Flash Sales</span>
+            </Link>
+
+            {/* 5. Sign In / User Menu */}
+            {user ? (
+              <>
                 <Link
-                  href="/auth/login"
+                  href="/orders"
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-3 text-gray-700 hover:text-primary py-2"
                 >
-                  <User className="h-5 w-5" />
-                  <span>Sign In</span>
+                  <Package className="h-5 w-5" />
+                  <span>My Orders</span>
                 </Link>
-              )}
+                {user.role === 'admin' && (
+                  <Link
+                    href="/admin/dashboard"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 text-gray-700 hover:text-primary py-2"
+                  >
+                    <User className="h-5 w-5" />
+                    <span>Admin</span>
+                  </Link>
+                )}
+                <button
+                  onClick={() => {
+                    logout();
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-3 text-red-600 hover:text-red-700 py-2 w-full"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span>Logout</span>
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/auth/login"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 text-gray-700 hover:text-primary py-2"
+              >
+                <User className="h-5 w-5" />
+                <span>Sign In</span>
+              </Link>
+            )}
+
+            {/* 6. Founder's Story */}
+            <div className="border-t pt-2 mt-2">
+              <Link
+                href="/about-owner"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 text-gray-700 hover:text-primary py-2"
+              >
+                <BookOpen className="h-5 w-5" />
+                <span>Founder's Story</span>
+              </Link>
             </div>
           </nav>
         </Drawer.Content>
