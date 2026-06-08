@@ -33,6 +33,7 @@ const regionsWithCities: Record<string, string[]> = {
 const allRegions = Object.keys(regionsWithCities);
 
 // Paystack button component - only renders on client side
+// Paystack button component
 function PaystackButton({ email, amount, orderId, onSuccess, onClose }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -45,6 +46,7 @@ function PaystackButton({ email, amount, orderId, onSuccess, onClose }: any) {
   const handlePayment = () => {
     if (!isMounted) return;
     setIsLoading(true);
+    
     const script = document.createElement('script');
     script.src = 'https://js.paystack.co/v1/inline.js';
     script.onload = () => {
@@ -54,6 +56,7 @@ function PaystackButton({ email, amount, orderId, onSuccess, onClose }: any) {
         setIsLoading(false);
         return;
       }
+      
       const handler = (window as any).PaystackPop.setup({
         key: publicKey,
         email,
@@ -61,8 +64,16 @@ function PaystackButton({ email, amount, orderId, onSuccess, onClose }: any) {
         currency: 'GHS',
         ref: `ORDER-${orderId}-${Date.now()}`,
         metadata: { orderId },
-        callback: () => onSuccess(),
-        onClose: () => onClose(),
+        callback: (response: any) => {
+          console.log('Payment success:', response);
+          // Call the success callback to redirect
+          onSuccess();
+        },
+        onClose: () => {
+          console.log('Payment closed');
+          setIsLoading(false);
+          onClose();
+        },
       });
       handler.openIframe();
     };
@@ -81,7 +92,7 @@ function PaystackButton({ email, amount, orderId, onSuccess, onClose }: any) {
       disabled={isLoading || !publicKey}
       className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3"
     >
-      {isLoading ? 'Loading Paystack...' : '💳 Pay Now'}
+      {isLoading ? 'Processing...' : '💳 Pay Now'}
     </Button>
   );
 }
