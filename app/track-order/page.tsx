@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Package, Truck, Clock, CheckCircle, MapPin, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import axios from '@/lib/api';
+import useAuthStore from '@/store/authStore';
 
 interface OrderStatus {
   _id: string;
@@ -35,8 +36,9 @@ const statusSteps = [
   { key: 'delivered', label: 'Delivered', icon: CheckCircle, color: 'text-green-500' },
 ];
 
-export default function TrackOrderPage() {
+function TrackOrderContent() {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [orderId, setOrderId] = useState('');
   const [order, setOrder] = useState<OrderStatus | null>(null);
   const [loading, setLoading] = useState(false);
@@ -49,12 +51,18 @@ export default function TrackOrderPage() {
       return;
     }
 
+    // If not logged in, redirect to login page
+    if (!user) {
+      router.push(`/auth/login?redirect=/track-order&orderId=${orderId}`);
+      return;
+    }
+
     setLoading(true);
     setError('');
     setOrder(null);
 
     try {
-      const res = await axios.get(`/orders/₵{orderId}`);
+      const res = await axios.get(`/orders/${orderId}`);
       setOrder(res.data.data);
     } catch (err: any) {
       if (err.response?.status === 404) {
@@ -95,6 +103,17 @@ export default function TrackOrderPage() {
         </Button>
       </form>
 
+      {/* Not Logged In Message */}
+      {!user && !loading && !order && !error && (
+        <div className="text-center py-12 bg-yellow-50 rounded-lg border border-yellow-200">
+          <Package className="h-16 w-16 mx-auto text-yellow-500 mb-3" />
+          <p className="text-gray-700 mb-2">Please login to track your order</p>
+          <Button onClick={() => router.push('/auth/login?redirect=/track-order')} className="bg-primary mt-2">
+            Login Now
+          </Button>
+        </div>
+      )}
+
       {/* Error Message */}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6">
@@ -120,12 +139,12 @@ export default function TrackOrderPage() {
                     
                     return (
                       <div key={step.key} className="flex-1 text-center relative">
-                        <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center ₵{
+                        <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center ${
                           isCompleted ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
-                        } ₵{isCurrent ? 'ring-4 ring-primary/30' : ''}`}>
+                        } ${isCurrent ? 'ring-4 ring-primary/30' : ''}`}>
                           <Icon className="h-5 w-5" />
                         </div>
-                        <p className={`text-xs mt-2 font-medium ₵{isCompleted ? 'text-primary' : 'text-gray-500'}`}>
+                        <p className={`text-xs mt-2 font-medium ${isCompleted ? 'text-primary' : 'text-gray-500'}`}>
                           {step.label}
                         </p>
                       </div>
@@ -136,7 +155,7 @@ export default function TrackOrderPage() {
                 <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 -z-10">
                   <div 
                     className="h-full bg-primary transition-all duration-500"
-                    style={{ width: `₵{(getCurrentStepIndex() / (statusSteps.length - 1)) * 100}%` }}
+                    style={{ width: `${(getCurrentStepIndex() / (statusSteps.length - 1)) * 100}%` }}
                   />
                 </div>
               </div>
@@ -212,17 +231,14 @@ export default function TrackOrderPage() {
           </Card>
         </div>
       )}
-
-      {/* Help Section */}
-      {!order && !loading && !error && (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <Package className="h-16 w-16 mx-auto text-gray-400 mb-3" />
-          <p className="text-gray-500">Enter your order ID to track your package</p>
-          <p className="text-xs text-gray-400 mt-2">
-            Order ID can be found in your order confirmation email
-          </p>
-        </div>
-      )}
     </div>
+  );
+}
+
+export default function TrackOrderPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <TrackOrderContent />
+    </Suspense>
   );
 }
