@@ -165,10 +165,17 @@ function CheckoutContent() {
     } catch (err: any) { alert(err.response?.data?.message || 'Order creation failed'); }
     finally { setLoading(false); }
   };
-  const onPaystackSuccess = () => {
-    clearCart();
-    router.push('/orders?payment=success');
-  };
+  const onPaystackSuccess = async () => {
+  // Mark order as paid on backend
+  try {
+    await axios.put(`/orders/${createdOrderId}/pay`, { status: 'completed' });
+  } catch (err) {
+    console.error('Failed to update payment status', err);
+  }
+  // Clear cart and redirect
+  clearCart();
+  router.push('/orders?payment=success');
+};
   const onPaystackClose = () => setCreatedOrderId(null);
 
   const updateAddress = (field: string, value: string) => {
