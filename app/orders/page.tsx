@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import axios from '@/lib/api';
+import useCartStore from '@/store/cartStore';
 import { Package, CheckCircle, Truck, Clock } from 'lucide-react';
 
 const fetchOrders = async () => {
@@ -24,7 +25,18 @@ const statusIcon = (status: string) => {
 
 function OrdersContent() {
   const searchParams = useSearchParams();
+  const { clearCart } = useCartStore();
   const success = searchParams.get('success');
+  const paymentSuccess = searchParams.get('payment') === 'success';
+  const clearCartFlag = searchParams.get('clearCart') === 'true';
+
+  // Clear cart when coming from successful order
+  useEffect(() => {
+    if (success || paymentSuccess || clearCartFlag) {
+      clearCart();
+    }
+  }, [success, paymentSuccess, clearCartFlag, clearCart]);
+
   const { data: orders, isLoading, error } = useQuery({ 
     queryKey: ['orders'], 
     queryFn: fetchOrders,
@@ -37,11 +49,19 @@ function OrdersContent() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">My Orders</h1>
+      
       {success && (
         <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
           Order placed successfully! We'll notify you when it ships.
         </div>
       )}
+      
+      {paymentSuccess && (
+        <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
+          Payment successful! Your order has been confirmed.
+        </div>
+      )}
+      
       {orders?.length === 0 ? (
         <div className="text-center py-12">
           <Package className="h-16 w-16 mx-auto text-gray-400 mb-3" />
@@ -62,13 +82,13 @@ function OrdersContent() {
                   <span className="capitalize font-medium">{order.status}</span>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold">₵{order.totalPrice.toLocaleString()}</p>
-                  <p className="text-xs text-gray-500">{order.paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : 'Paid'}</p>
+                  <p className="font-bold">₵{order.totalPrice?.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">{order.paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : 'Paid via Card'}</p>
                 </div>
               </div>
               <div className="pt-3">
-                {order.orderItems?.slice(0, 2).map((item: any) => (
-                  <div key={item.product?._id || item.name} className="flex gap-3 text-sm py-1">
+                {order.orderItems?.slice(0, 2).map((item: any, idx: number) => (
+                  <div key={idx} className="flex gap-3 text-sm py-1">
                     <span className="text-gray-600">{item.name} x{item.qty}</span>
                   </div>
                 ))}
