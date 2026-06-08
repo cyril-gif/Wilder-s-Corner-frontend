@@ -24,8 +24,8 @@ export default function ContactPage() {
     setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
-  // Wa, Upper West Region coordinates
-  const mapSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5!2d-2.50685!3d10.06085!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf2d5b5b5b5b5b%3A0x5b5b5b5b5b5b5b5b!2sWa!5e0!3m2!1sen!2sgh!4v1700000000000!5m2!1sen!2sgh";
+  // Modern City Hotel, Wa, Upper West Region coordinates
+  const mapSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.3!2d-2.50685!3d10.06085!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf2d5b5b5b5b5b%3A0x5b5b5b5b5b5b5b5b!2sModern%20City%20Hotel!5e0!3m2!1sen!2sgh!4v1700000000000!5m2!1sen!2sgh";
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -41,9 +41,9 @@ export default function ContactPage() {
                 <MapPin className="h-6 w-6 text-primary shrink-0 mt-1" />
                 <div>
                   <h3 className="font-medium">Our Location</h3>
-                  <p className="text-gray-600">Wa, Upper West Region, Ghana</p>
-                  <p className="text-gray-600">Wa Central Business District</p>
-                  <p className="text-gray-600">Near Wa Naa's Palace</p>
+                  <p className="text-gray-600">Modern City Hotel, Wa</p>
+                  <p className="text-gray-600">Upper West Region, Ghana</p>
+                  <p className="text-gray-600">Opposite Wa Technical University</p>
                 </div>
               </div>
               
@@ -51,8 +51,8 @@ export default function ContactPage() {
                 <Phone className="h-6 w-6 text-primary shrink-0 mt-1" />
                 <div>
                   <h3 className="font-medium">Phone Number</h3>
-                  <p className="text-gray-600">+233 39 202 1234</p>
-                  <p className="text-gray-600">+233 24 456 7890</p>
+                  <p className="text-gray-600">027 180 8592</p>
+                  <p className="text-gray-600">+233 27 180 8592</p>
                 </div>
               </div>
               
@@ -77,23 +77,23 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Live Map - Wa, Upper West Region */}
+          {/* Live Map - Modern City Hotel, Wa */}
           <div className="mt-8">
             <h2 className="text-xl font-semibold mb-4">Find Us on Map</h2>
             <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5!2d-2.50685!3d10.06085!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf2d5b5b5b5b5b%3A0x5b5b5b5b5b5b5b5b!2sWa!5e0!3m2!1sen!2sgh!4v1700000000000!5m2!1sen!2sgh"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.3!2d-2.50685!3d10.06085!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf2d5b5b5b5b5b%3A0x5b5b5b5b5b5b5b5b!2sModern%20City%20Hotel!5e0!3m2!1sen!2sgh!4v1700000000000!5m2!1sen!2sgh"
                 width="100%"
                 height="300"
                 style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Wilder's Corner Location - Wa, Upper West Region"
+                title="Wilder's Corner Location - Modern City Hotel, Wa, Upper West Region"
               ></iframe>
             </div>
             <p className="text-sm text-gray-500 mt-2 text-center">
-              📍 Located in Wa, Upper West Region – Serving all of Ghana
+              📍 Modern City Hotel, Wa – Opposite Wa Technical University
             </p>
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function ContactPage() {
           <a href="#" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-primary transition">
             Twitter
           </a>
-          <a href="#" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-primary transition">
+          <a href="https://wa.me/233271808592" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-primary transition">
             WhatsApp
           </a>
         </div>
