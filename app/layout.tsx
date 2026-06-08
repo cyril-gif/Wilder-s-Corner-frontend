@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import QueryProvider from '@/providers/QueryProvider';
-import AuthProvider from '@/components/providers/AuthProvider';
+import AuthProvider from '@/components/Providers/AuthProvider';
 import Navbar from '@/components/layout/Navbar';
 import CategoryBar from '@/components/layout/CategoryBar';
 import Footer from '@/components/layout/Footer';
