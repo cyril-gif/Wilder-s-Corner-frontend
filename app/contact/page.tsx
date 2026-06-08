@@ -18,15 +18,14 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would integrate with an email service or backend
     console.log('Contact form submitted:', formData);
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 5000);
     setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
-  // Western Region coordinates (Takoradi)
-  const mapSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15891.69347300752!2d-1.7768484!3d4.899357!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfda4c1b7d9e45f7%3A0x2f5b2b4b3c4d5e6f!2sTakoradi!5e0!3m2!1sen!2sgh!4v1700000000000!5m2!1sen!2sgh";
+  // Wa, Upper West Region coordinates
+  const mapSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5!2d-2.50685!3d10.06085!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf2d5b5b5b5b5b%3A0x5b5b5b5b5b5b5b5b!2sWa!5e0!3m2!1sen!2sgh!4v1700000000000!5m2!1sen!2sgh";
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -42,8 +41,9 @@ export default function ContactPage() {
                 <MapPin className="h-6 w-6 text-primary shrink-0 mt-1" />
                 <div>
                   <h3 className="font-medium">Our Location</h3>
-                  <p className="text-gray-600">Takoradi, Western Region, Ghana</p>
-                  <p className="text-gray-600">Market Circle, Opposite Ghana Commercial Bank</p>
+                  <p className="text-gray-600">Wa, Upper West Region, Ghana</p>
+                  <p className="text-gray-600">Wa Central Business District</p>
+                  <p className="text-gray-600">Near Wa Naa's Palace</p>
                 </div>
               </div>
               
@@ -51,7 +51,7 @@ export default function ContactPage() {
                 <Phone className="h-6 w-6 text-primary shrink-0 mt-1" />
                 <div>
                   <h3 className="font-medium">Phone Number</h3>
-                  <p className="text-gray-600">+233 31 202 1234</p>
+                  <p className="text-gray-600">+233 39 202 1234</p>
                   <p className="text-gray-600">+233 24 456 7890</p>
                 </div>
               </div>
@@ -77,23 +77,23 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Live Map */}
+          {/* Live Map - Wa, Upper West Region */}
           <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Our Location</h2>
+            <h2 className="text-xl font-semibold mb-4">Find Us on Map</h2>
             <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3970.961467876595!2d-1.766848!3d4.899357!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfda4c1b7d9e45f7%3A0x2f5b2b4b3c4d5e6f!2sTakoradi!5e0!3m2!1sen!2sgh!4v1700000000000!5m2!1sen!2sgh"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5!2d-2.50685!3d10.06085!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf2d5b5b5b5b5b%3A0x5b5b5b5b5b5b5b5b!2sWa!5e0!3m2!1sen!2sgh!4v1700000000000!5m2!1sen!2sgh"
                 width="100%"
                 height="300"
                 style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Wilder's Corner Location - Takoradi, Western Region"
+                title="Wilder's Corner Location - Wa, Upper West Region"
               ></iframe>
             </div>
             <p className="text-sm text-gray-500 mt-2 text-center">
-              📍 Located in Takoradi, Western Region – Serving all of Ghana
+              📍 Located in Wa, Upper West Region – Serving all of Ghana
             </p>
           </div>
         </div>
