@@ -83,7 +83,7 @@ export default function MobileNav() {
                   {categories.map((cat: any) => (
                     <Link
                       key={cat.slug}
-                      href={`/category/₵{cat.slug}`}
+                      href={`/category/${cat.slug}`}
                       onClick={() => setOpen(false)}
                       className="block py-2 text-sm text-gray-600 hover:text-primary"
                     >
