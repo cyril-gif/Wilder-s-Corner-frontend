@@ -12,12 +12,9 @@ export const authOptions = {
     signIn: "/auth/login",
   },
   callbacks: {
-    async redirect({ baseUrl, url }: { baseUrl: string; url: string }) {
-      // If coming from checkout, redirect back to checkout
-      if (url.includes('/checkout')) return url;
-      if (url.includes('/cart')) return url;
-      // Otherwise go to home page
-      return baseUrl;
+    async redirect({ baseUrl }) {
+      // Redirect to our custom callback page after Google auth
+      return `${baseUrl}/auth/callback`;
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
