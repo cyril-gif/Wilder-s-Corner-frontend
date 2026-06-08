@@ -12,48 +12,84 @@ import useAuthStore from '@/store/authStore';
 import axios from '@/lib/api';
 
 // Ghana regions with cities and areas
+// Complete Ghana regions with cities and areas
 const locationData: Record<string, Record<string, string[]>> = {
   'Greater Accra': {
-    'Accra': ['Airport Residential', 'Cantonments', 'Labone', 'Osu', 'Ringway Central', 'Roman Ridge', 'East Legon', 'West Legon', 'Dzorwulu', 'Achimota'],
-    'Tema': ['Tema Community 1', 'Tema Community 2', 'Tema Community 3', 'Tema Community 4', 'Tema Community 5', 'Tema Community 6', 'Tema Community 7', 'Tema Community 8', 'Tema Community 9', 'Tema Community 10', 'Tema Community 11', 'Tema Community 12', 'Tema Community 25'],
-    'Adenta': ['Adenta New Site', 'Adenta Old Site', 'Adenta Community 12', 'Adenta West Hills'],
-    'Madina': ['Madina Zongo', 'Madina Estate', 'Madina New Road', 'Madina Atomic Junction'],
-    'Ashaiman': ['Ashaiman Zongo', 'Ashaiman Estate', 'Ashaiman New Town', 'Ashaiman Lebanon'],
-    'Dansoman': ['Dansoman Estate', 'Dansoman Sahara', 'Dansoman Last Stop'],
+    'Accra': ['Airport Residential', 'Cantonments', 'Labone', 'Osu', 'Ringway Central', 'Roman Ridge', 'East Legon', 'West Legon', 'Dzorwulu', 'Achimota', 'North Kaneshie', 'South Kaneshie', 'Darkuman', 'Mamprobi', 'Chorkor', 'Korle Bu', 'Adabraka', 'Asylum Down', 'Tudu', 'Jamestown', 'Ushertown', 'Christiansborg', 'Nima', 'Maamobi', 'Alajo', 'Kokomlemle', 'Abelenkpe', 'Airport West'],
+    'Tema': ['Community 1', 'Community 2', 'Community 3', 'Community 4', 'Community 5', 'Community 6', 'Community 7', 'Community 8', 'Community 9', 'Community 10', 'Community 11', 'Community 12', 'Community 25', 'Tema New Town', 'Tema Fishing Harbour'],
+    'Adenta': ['Adenta New Site', 'Adenta Old Site', 'Adenta Community 12', 'Adenta West Hills', 'Brewery'],
+    'Madina': ['Madina Zongo', 'Madina Estate', 'Madina New Road', 'Madina Atomic Junction', 'Madina SSNIT Flats', 'Madina Council'],
+    'Ashaiman': ['Ashaiman Zongo', 'Ashaiman Estate', 'Ashaiman New Town', 'Ashaiman Lebanon', 'Ashaiman Tulaku', 'Ashaiman Makola', 'Ashaiman Main Market'],
+    'Dansoman': ['Dansoman Estate', 'Dansoman Sahara', 'Dansoman Last Stop', 'Dansoman SSNIT Flats', 'Dansoman Junction'],
+    'Dodowa': ['Dodowa Central', 'Kpone', 'Sege', 'Ada', 'Prampram', 'Ningo', 'Old Ningo'],
+    'Amasaman': ['Amasaman Central', 'Ayawaso', 'Gbawe', 'Bortianor', 'Weija', 'Mallam', 'Oblogo'],
   },
   'Ashanti': {
-    'Kumasi': ['Adum', 'Bantama', 'Asokwa', 'Tafo', 'Oforikrom', 'Santasi', 'Ahinsan', 'Atonsu', 'Kwadaso', 'Buokrom Estate', 'Patasi', 'Danyame', 'Bohyen', 'Ayigya', 'Kentinkrono'],
-    'Obuasi': ['Obuasi Central', 'Bekwai', 'Tweneboa Kodua', 'Akaporiso', 'Kwabenakwa'],
-    'Ejisu': ['Ejisu Central', 'Bonwire', 'Kwaso', 'Adadientem'],
-    'Mampong': ['Mampong Central', 'Kofiase', 'Asaam'],
+    'Kumasi': ['Adum', 'Bantama', 'Asokwa', 'Tafo', 'Oforikrom', 'Santasi', 'Ahinsan', 'Atonsu', 'Kwadaso', 'Buokrom Estate', 'Patasi', 'Danyame', 'Bohyen', 'Ayigya', 'Kentinkrono', 'Manhyia', 'Asafo', 'Amakom', 'Suame', 'Bompata', 'Abuakwa', 'Asem', 'Nhyiaeso', 'Moshie Zongo', 'Abrepo', 'Abrepo Junction', 'Bekwai Roundabout', 'Anloga Junction', 'Atonsu-Agogo', 'Chirapatre', 'Danyame-Barracks', 'Dichemso', 'Emesuo', 'Fumesua', 'Gyinyase', 'Kaase', 'Krofrom', 'Kwadaso Estate', 'Mamponteng', 'Oduom', 'Pankrono', 'Ridge', 'Sofoline'],
+    'Obuasi': ['Obuasi Central', 'Bekwai', 'Tweneboa Kodua', 'Akaporiso', 'Kwabenakwa', 'Anyinam', 'Binsere', 'Dunkwa', 'Mile 9', 'New Odumase', 'Obuasi Goldfields', 'Tarkwa Breman'],
+    'Ejisu': ['Ejisu Central', 'Bonwire', 'Kwaso', 'Adadientem', 'Besease', 'Juaben', 'Abenase', 'Domeabra', 'Ejuraman', 'Krapa', 'Nkwanta', 'Ofoase'],
+    'Mampong': ['Mampong Central', 'Kofiase', 'Asaam', 'Drobonso', 'Deduako', 'Agona', 'Amoafo', 'Aponapon', 'Asaaman', 'Asaamang', 'Asante Akyem', 'Beposo', 'Bodomase', 'Buoho'],
+    'Konongo': ['Konongo Central', 'Odumase', 'Asaaman', 'Bosome', 'Freetown', 'Nkwanta', 'Wioso', 'Anyinofi'],
+    'Effiduase': ['Effiduase Central', 'Asokore', 'Asokore Mampong', 'Kokoase', 'Adanwomase', 'Ahensan', 'Asamang', 'Asante Bekwai'],
   },
   'Northern': {
-    'Tamale': ['Zogbeli', 'Lamashegu', 'Dungu', 'Bilpela', 'Gumani', 'Dabokpa', 'Kukuo', 'Choggu', 'Vitting', 'Jisonaayili', 'Tishigu', 'Kaladan', 'Sakasaka', 'Gurugu', 'Siyi', 'Kamina Barracks'],
-    'Yendi': ['Yendi Central', 'Gundogu', 'Gushegu', 'Zabzugu'],
+    'Tamale': ['Zogbeli', 'Lamashegu', 'Dungu', 'Bilpela', 'Gumani', 'Dabokpa', 'Kukuo', 'Choggu', 'Vitting', 'Jisonaayili', 'Tishigu', 'Kaladan', 'Sakasaka', 'Gurugu', 'Siyi', 'Kamina Barracks', 'Lamashegu Zongo', 'Bomdan', 'Fuo', 'Kamina', 'Kukuo Zongo', 'Malbia', 'Nayilifong', 'Sagnerigu', 'Tisigu', 'Tugu-Yepala', 'Victory Road', 'Taha'],
+    'Yendi': ['Yendi Central', 'Gundogu', 'Gushegu', 'Zabzugu', 'Bimbilla', 'Kpandai', 'Salaga', 'Chereponi', 'Gbintiri', 'Jagberi', 'Nakpali', 'Nayoko', 'Nyensung', 'Piong', 'Saboba', 'Tatale', 'Wapuli', 'Zangbalun'],
+    'Sagnarigu': ['Sagnarigu Central', 'Kalpohini', 'Kpalsi', 'Nyanshegu', 'Gulungu', 'Jisonanyili', 'Sherigu', 'Tiyumba', 'Katariga', 'Kurugu'],
   },
   'Volta': {
-    'Ho': ['Ho Bankoe', 'Ho Dome', 'Ho Kpodzi', 'Ho Fiave', 'Agortime'],
-    'Hohoe': ['Hohoe Central', 'Gbi', 'Akpafu', 'Liati'],
+    'Ho': ['Ho Bankoe', 'Ho Dome', 'Ho Kpodzi', 'Ho Fiave', 'Agortime', 'Akatsi', 'Amedzofe', 'Anfoega', 'Awudome', 'Bame', 'Gbi', 'Hohoe', 'Klefe', 'Kpedze', 'Kpele', 'Kpeme', 'Mataheko', 'Sokode', 'Takla', 'Tsito', 'Vane'],
+    'Hohoe': ['Hohoe Central', 'Gbi', 'Akpafu', 'Liati', 'Afajato', 'Alavanyo', 'Bame', 'Biakpa', 'Fodome', 'Have', 'Kadjebi', 'Kpasa', 'Kpeve', 'Likpe', 'Logba', 'Nkonya', 'Nyagbo', 'Santrokofi', 'Tafi', 'Wli', 'Wodome', 'Worawora'],
+    'Keta': ['Keta Central', 'Abor', 'Afife', 'Agbozume', 'Aflao', 'Agblekpui', 'Anloga', 'Atiavi', 'Denu', 'Dzelukope', 'Fiadame', 'Gbefi', 'Horvi', 'Kedzi', 'Klikor', 'Kpone', 'Mataheko', 'Penyi', 'Salom', 'Seva', 'Srogboe', 'Tegbi', 'Toko', 'Vui', 'Weta'],
+    'Jasikan': ['Jasikan Central', 'Bowiri', 'Buem', 'Kadjebi', 'Nkwanta', 'Oti', 'Pepesu', 'Tutukpene', 'Ve Koloenu', 'Worawora', 'Wurupong'],
   },
   'Western': {
-    'Takoradi': ['Apremdo', 'Anaji', 'Effiakuma', 'Kansaworado', 'Nkontompo', 'Nkroful', 'Assakae', 'New Takoradi', 'Kwesimintsim', 'Tankwia'],
-    'Sekondi': ['Essikado', 'Sekondi Central', 'Kojokrom', 'Ewusiejo'],
-  },
-  'Central': {
-    'Cape Coast': ['Amamoma', 'Kakumdo', 'Adisadel', 'Nkanfoa', 'Pedu', 'Bakaano', 'Anafo', 'Anaafo'],
-    'Kasoa': ['Iron City', 'Opeikuma', 'Akweley', 'Lamptey Mills', 'Budumburam'],
+    'Takoradi': ['Apremdo', 'Anaji', 'Effiakuma', 'Kansaworado', 'Nkontompo', 'Nkroful', 'Assakae', 'New Takoradi', 'Kwesimintsim', 'Tankwia', 'Beach Road', 'Effia Nkwanta', 'Fijai', 'Kojokrom', 'Mpintsin', 'Nkotompo', 'Sekondi', 'Adiembra', 'Amesima', 'Anaji Estate', 'Asem'],
+    'Sekondi': ['Essikado', 'Sekondi Central', 'Kojokrom', 'Ewusiejo', 'Adiaso', 'Adiembra', 'Ahenboboano', 'Akodzo', 'Annieville', 'Bakaano', 'Bewyerba', 'Brawire', 'Brempong', 'Brinja', 'Churchil', 'Ekusie', 'Essia', 'Fanti Manso', 'Fijai', 'Guinea Worm'],
+    'Tarkwa': ['Tarkwa Central', 'Aboso', 'Bogoso', 'Dumasi', 'Huni Valley', 'Nkonya', 'Nsuta', 'Tamso', 'Teberebie', 'Wassa Akropong', 'Apinto', 'Aklika', 'Amanful', 'Boku', 'Daboase', 'Abuoso'],
   },
   'Eastern': {
-    'Koforidua': ['Betom', 'Srodae', 'Adweso', 'Effiduase', 'New Juaben', 'Old Tafo'],
-    'Nkawkaw': ['Nkawkaw Central', 'Mpraeso', 'Abetifi'],
+    'Koforidua': ['Betom', 'Srodae', 'Adweso', 'Effiduase', 'New Juaben', 'Old Tafo', 'Oyoko', 'Jumapo', 'Asokore', 'Nsukwao', 'Abakrampa', 'Akosombo', 'Akuse', 'Asesease', 'Asuboi', 'Akwadum', 'Bunso', 'Kukurantumi', 'Mampong', 'Maase', 'Nkurakan', 'Nkwatia', 'Obawale', 'Suhum', 'Tafo', 'Zongo'],
+    'Nkawkaw': ['Nkawkaw Central', 'Mpraeso', 'Abetifi', 'Pepease', 'Aburi', 'Larteh', 'Mamfe', 'Adukrom', 'Akropong', 'Amanokrom', 'Apirede', 'Asamankese', 'Asesewa', 'Ayensuano', 'Dome', 'Kade', 'Kibi', 'Koforidua', 'Kyebi', 'Mangoase', 'Nsawam', 'Nsuapemso', 'Oda', 'Oduponkpehe', 'Pokuase', 'Somanya', 'Suhum', 'Tafo'],
+    'Akwatia': ['Akwatia Central', 'Oda', 'Asamankese', 'Aburi', 'Agormanya', 'Akroso', 'Akyem', 'Anyinam', 'Apoli', 'Asafo', 'Asamankese', 'Asuboi', 'Atewa', 'Atti', 'Awisa', 'Begoro', 'Bunso', 'Dome', 'Juaso', 'Kade', 'Kwabeng', 'Mame', 'Mankrong', 'Nankese', 'Nkwapaw', 'Nkwaten', 'Ofoase', 'Osiem', 'Pakro', 'Pameng', 'Pankrono', 'Suhum', 'Yilo Krobo'],
+  },
+  'Central': {
+    'Cape Coast': ['Amamoma', 'Kakumdo', 'Adisadel', 'Nkanfoa', 'Pedu', 'Bakaano', 'Anafo', 'Anaafo', 'Abura', 'Apewosika', 'Ayensu', 'Biriwa', 'Duakor', 'Ekon', 'Esikyir', 'Foso', 'Jukwa', 'Kakum', 'Kokodo', 'Kwapro', 'Mankesim', 'Moree', 'Nakwa', 'Nsusua', 'Ola', 'Okyere', 'Otuam', 'Sasun', 'Siwdo', 'Sofos', 'Srafa', 'Tandoro', 'Twifo'],
+    'Kasoa': ['Iron City', 'Opeikuma', 'Akweley', 'Lamptey Mills', 'Budumburam', 'Awutu Bereku', 'Awutu Senya', 'Bawjiase', 'Chinto', 'Dampase', 'Fetteh', 'Gomoa', 'Gyamfi', 'Kakraba', 'Kokrobite', 'Nduom', 'Nyanyano', 'Obom', 'Ofaakor', 'Ohwim', 'Onyadze', 'Papase', 'School Junction', 'Senya', 'Sowutuom', 'Weija', 'Winneba'],
+    'Winneba': ['Winneba Central', 'Ateitu', 'Atimu', 'Ayensudo', 'Gyatakrom', 'Hasi', 'Issakrom', 'Jukwa', 'Kojo Bedu', 'Mampong', 'Nyanyano', 'Sankor', 'Sasabi', 'Soccer', 'Sraha', 'Tete', 'Tikola', 'Yakum'],
   },
   'Bono': {
-    'Sunyani': ['New Dumasua', 'Penkwase', 'Nkwabeng', 'Fiapre', 'Yamfo'],
-    'Berekum': ['Berekum Central', 'Kato', 'Senase'],
+    'Sunyani': ['New Dumasua', 'Penkwase', 'Nkwabeng', 'Fiapre', 'Yamfo', 'Abesim', 'Adantia', 'Adjoafua', 'Adokrom', 'Akrobi', 'Asufui', 'Aterakrom', 'Atronie', 'Awuom', 'Bechere', 'Benin', 'Benkasa', 'Bomaa', 'Buokum', 'Chiraa', 'Dadieso', 'Drobo', 'Japekrom', 'Kato', 'Kodie', 'Kwasi Bu', 'Mim', 'Nana Atta', 'Ntrobo', 'Odumase', 'Oforikrom', 'Papa', 'Pata', 'Pepedom', 'Sankore', 'Sinnadai', 'Tabora', 'Tain', 'Tano', 'Tanoboase', 'Tepa', 'Tisikasi', 'Wamfie', 'Wareto', 'Yamfo', 'Yaw Tufu'],
+    'Berekum': ['Berekum Central', 'Kato', 'Senase', 'Abesim', 'Adadiem', 'Adokrom', 'Adunafua', 'Agyeikrom', 'Akunkrom', 'Anana', 'Asueyi', 'Asura', 'Aterakrom', 'Bajia', 'Bechem', 'Bomaa', 'Buokum', 'Dormaa', 'Dormaa Ahenkro', 'Drobo', 'Duayaw Nkwanta', 'Japekrom', 'Jinijini', 'Kato', 'Kato Krom', 'Kenyasi', 'Mensakrom', 'Mim', 'Nante', 'Nkrankrom', 'Nkronua', 'Nkwanta', 'Nsoatre', 'Odumase', 'Papa', 'Sankore', 'Sinnadai', 'Tain', 'Tano', 'Tanoboase', 'Tepa', 'Tisikasi', 'Wamfie'],
+  },
+  'Bono East': {
+    'Techiman': ['Techiman Central', 'Kintampo', 'Nkoranza', 'Atebubu', 'Prang', 'Jema', 'Kwame Danso', 'Akomadan', 'Amoma', 'Asantekwa', 'Baffo', 'Bah', 'Boankra', 'Bono', 'Bonso', 'Bontuku', 'Branam', 'Bredi', 'Buoku', 'Busua', 'Forikrom', 'Jama', 'Kajeji', 'Kawampe', 'Kenten', 'Kera', 'Kete', 'Krabi', 'Kranso', 'Krobo', 'Kwaku', 'Kwame', 'Kwame Danso', 'Kwasi', 'Lombardo', 'Maase', 'Manso', 'Mim', 'Moma', 'Nago', 'New Longoro', 'Nimkor', 'Nkwanta', 'Nkwanta South', 'Nnwu', 'Nsoatre', 'Nyomoase', 'Oforikrom', 'Patakro', 'Peboase', 'Pepasah', 'Praso', 'Saboa', 'Sampa', 'Sankore', 'Sawla', 'Sunyani', 'Tamfoe', 'Tano'],
+  },
+  'Ahafo': {
+    'Goaso': ['Goaso Central', 'Bechem', 'Duayaw Nkwanta', 'Kenyasi', 'Mim', 'Hwidiem', 'Kukuom', 'Akrodie', 'Asutifi', 'Biadan', 'Bono', 'Buoku', 'Dadieso', 'Dama', 'Donkorkrom', 'Fawoman', 'Fetentaa', 'Gambia', 'Kaserem', 'Kenyase', 'Koase', 'Koforidua', 'Kukuom', 'Kwadwo', 'Kwaku', 'Kwasi', 'Mamfe', 'Manso', 'Mim', 'Nana', 'Nante', 'Nkrankrom', 'Nkwanta', 'Nsuta', 'Ntotroso', 'Ntotoroso', 'Papa', 'Pata', 'Pebaa', 'Pepedom', 'Sankore', 'Sinnadai', 'Supe', 'Tain', 'Tano', 'Tanoboase', 'Tepa', 'Tisikasi', 'Wamfie', 'Wareto', 'Yamfo', 'Yaw', 'Yaw Tufu'],
+  },
+  'Oti': {
+    'Dambai': ['Dambai Central', 'Jasikan', 'Kadjebi', 'Kete Krachi', 'Nkwanta', 'Worawora', 'Brewaniase', 'Alavanyo', 'Akan', 'Akrofu', 'Amedzope', 'Ameti', 'Apewu', 'Asabla', 'Asato', 'Asibi', 'Asonyako', 'Ayibonte', 'Badi', 'Baglo', 'Baii', 'Banda', 'Battor', 'Bawe', 'Beye', 'Bibiana', 'Bikoe', 'Bishi', 'Bonya', 'Boso', 'Botoku', 'Bowiri', 'Buafi', 'Bume', 'Challa', 'Chamle', 'Chinderi', 'Dambai', 'Damja', 'Dodo', 'Dofor', 'Dorma', 'Doyon', 'Dzemeni', 'Dzroke', 'Gbadjomo', 'Gbagba', 'Gbemini', 'Gbite', 'Georn', 'Gida', 'Gidigbe', 'Ginatso', 'Goke', 'Gona', 'Gosung', 'Grange', 'Gwei', 'Haho', 'Hakob', 'Haman', 'Hamoni', 'Harness', 'Hatasu', 'Hawah', 'Hembe', 'Hina', 'Hlodzo', 'Hodawu', 'Hohoe', 'Honuta', 'Horm'],
+  },
+  'North East': {
+    'Nalerigu': ['Nalerigu Central', 'Bunkpurugu', 'Gambaga', 'Walewale', 'Yagaba', 'Langbensi', 'Chereponi', 'Gbingban', 'Gbintiri', 'Guma', 'Gushi', 'Jagberi', 'Janga', 'Kadelso', 'Kaku', 'Kanda', 'Karikaru', 'Kate', 'Kobliman', 'Kpado', 'Kpajai', 'Kpaligu', 'Kparigu', 'Kpasengu', 'Kpatili', 'Kpatiok', 'Kperisi', 'Kpikpira', 'Kponbo', 'Kukoyiri', 'Kukuo', 'Kunbungu', 'Kunfuse', 'Kungu', 'Kunko', 'Kunyukuo', 'Kusanaba', 'Kuunduri', 'Kwahu', 'Kwaku', 'Kwame', 'Kwasi', 'Langbensi', 'Langbensi Kukuo', 'Lani', 'Lanten', 'Lantungo', 'Laribanga', 'Lawa', 'Mabeng', 'Mabure', 'Makesi', 'Malik', 'Malima', 'Mamankoma', 'Mamprugul', 'Mamprusi', 'Mamprugu', 'Manko', 'Manso', 'Mari', 'Marilyn'],
+  },
+  'Savannah': {
+    'Damango': ['Damango Central', 'Salaga', 'Daboya', 'Bole', 'Buipe', 'Sawla', 'Kpandai', 'Banda', 'Banda Nkwanta', 'Banda Tepo', 'Bandabeya', 'Bandadabi', 'Bandadi', 'Bandai', 'Bandal', 'Bandawe', 'Bandigbe', 'Bandima', 'Bandina', 'Bandini', 'Bandon', 'Bandu', 'Bandun', 'Banjam', 'Banko', 'Bao', 'Bape', 'Barabara', 'Barbe', 'Bario', 'Basare', 'Basi', 'Bata', 'Batagbene', 'Batak', 'Bato', 'Batoma', 'Batong', 'Bature', 'Bawa', 'Baya', 'Bazua', 'Bechi', 'Begu', 'Behinye', 'Bekai', 'Bekitik', 'Bembasi', 'Bena', 'Benga', 'Beni', 'Benim', 'Benne', 'Beposo', 'Bera', 'Beri', 'Beriyi', 'Besi', 'Beyi', 'Bianima', 'Biasi', 'Bibiri', 'Bie', 'Bikam', 'Bikani', 'Bile', 'Bimbila'],
+  },
+  'Upper East': {
+    'Bolgatanga': ['Bolgatanga Central', 'Bawku', 'Navrongo', 'Paga', 'Sandema', 'Zuarungu', 'Bongo', 'Garua', 'Kassena', 'Kusaug', 'Bolgatanga SSNIT Flats', 'Bolgatanga Estate', 'Bolgatanga Town', 'Bongo Central', 'Bongo Gorigo', 'Bongo Soe', 'Bongo Zorko', 'Bawku Abugri', 'Bawku Adaboya', 'Bawku Central', 'Bawku Natinga', 'Bawku Sabonjida', 'Bawku Soe', 'Bawku Wusuga', 'Bawku Zongo', 'Kassena Nankana', 'Kassena Nankana East', 'Kassena Nankana West', 'Navrongo Central', 'Navrongo Konchogo', 'Navrongo Paga', 'Navrongo Tono', 'Paga Central', 'Paga North', 'Paga South', 'Sandema Central', 'Sandema North', 'Sandema South', 'Zuarungu Central', 'Zuarungu North', 'Zuarungu South'],
+  },
+  'Upper West': {
+    'Wa': ['Wa Central', 'Jirapa', 'Nandom', 'Lawra', 'Tumu', 'Hamile', 'Daffiama', 'Kaleo', 'Gwollu', 'Wa North', 'Wa South', 'Wa SSNIT Flats', 'Wa Estate', 'Wa Town', 'Jirapa Central', 'Jirapa Raya', 'Jirapa Zongo', 'Nandom Central', 'Nandom Gbengbe', 'Nandom Kokoligu', 'Nandom Nadowli', 'Lawra Central', 'Lawra Eremon', 'Lawra Fielmuo', 'Lawra Sombo', 'Tumu Central', 'Tumu Dema', 'Tumu Nandwene', 'Tumu Yagtuur', 'Hamile Central', 'Hamile Pafoe', 'Hamile Sissala', 'Daffiama Central', 'Daffiama Issa', 'Daffiama Sissala', 'Kaleo Central', 'Kaleo Nadowli', 'Kaleo Wa', 'Gwollu Central', 'Gwollu Tumu', 'Gwollu Wa'],
+  },
+  'Western North': {
+    'Sefwi Wiawso': ['Sefwi Wiawso Central', 'Sefwi Asawinso', 'Sefwi Boako', 'Bibiani', 'Nkroful', 'Juaboso', 'Akontombra', 'Bodi', 'Bia', 'Bia West', 'Bia East', 'Suaman', 'Aowin', 'Aowin Central', 'Aowin East', 'Aowin West', 'Bibiani Anhwiaso Bekwai', 'Bibiani Central', 'Bibiani North', 'Bibiani South', 'Bodi Central', 'Bodi North', 'Bodi South', 'Juaboso Central', 'Juaboso North', 'Juaboso South', 'Sefwi Asafo', 'Sefwi Bekwai', 'Sefwi Debiso', 'Sefwi Essam', 'Sefwi Wiawso North', 'Sefwi Wiawso South', 'Sefwi Wiawso West', 'Suaman Central', 'Suaman East', 'Suaman West'],
   },
 };
 
 const allRegions = Object.keys(locationData);
+
 
 // Helper to get cities for selected region
 const getCities = (region: string) => Object.keys(locationData[region] || {});
