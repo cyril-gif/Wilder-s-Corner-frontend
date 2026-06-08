@@ -14,10 +14,11 @@ function LoginForm() {
 
   const handleGoogleLogin = async () => {
     try {
-      // Sign in with Google and redirect to the intended page
-      await signIn("google", { callbackUrl: redirect });
+      // Store the redirect URL in sessionStorage before Google login
+      sessionStorage.setItem('postLoginRedirect', redirect);
+      await signIn('google', { callbackUrl: '/auth/callback' });
     } catch (err) {
-      setError("Google login failed. Please try again.");
+      setError('Google login failed. Please try again.');
     }
   };
 
