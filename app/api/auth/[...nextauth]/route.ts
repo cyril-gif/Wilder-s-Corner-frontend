@@ -12,7 +12,7 @@ export const authOptions = {
     signIn: "/auth/login",
   },
   callbacks: {
-    async redirect({ baseUrl, url }) {
+    async redirect({ baseUrl, url }: { baseUrl: string; url: string }) {
       // If the callbackUrl contains checkout, go there
       if (url && url.includes('/checkout')) return url;
       if (url && url.includes('/cart')) return url;
