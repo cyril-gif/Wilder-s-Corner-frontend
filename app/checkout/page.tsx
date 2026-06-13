@@ -106,7 +106,6 @@ function CheckoutContent() {
     region: '',
     city: '',
     area: '',
-    postalCode: '',
     country: 'Ghana',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -128,7 +127,6 @@ function CheckoutContent() {
     if (!address.region) newErrors.region = 'Select region';
     if (!address.city) newErrors.city = 'Select city';
     if (!address.area) newErrors.area = 'Select area';
-    if (!address.postalCode.trim()) newErrors.postalCode = 'Postal code required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -143,7 +141,6 @@ function CheckoutContent() {
         city: address.city,
         state: address.region,
         area: address.area,
-        postalCode: address.postalCode,
         country: 'Ghana',
       },
       paymentMethod: 'paystack',
@@ -259,16 +256,9 @@ function CheckoutContent() {
                       {errors.area && <p className="text-red-500 text-xs">{errors.area}</p>}
                     </div>
                   </div>
-                  <div className="grid md:grid-cols-2 gap-5">
-                    <div>
-                      <Label>Postal code</Label>
-                      <Input value={address.postalCode} onChange={e => updateAddress('postalCode', e.target.value)} className="mt-1" />
-                      {errors.postalCode && <p className="text-red-500 text-xs">{errors.postalCode}</p>}
-                    </div>
-                    <div>
-                      <Label>Country</Label>
-                      <Input value="Ghana" disabled className="mt-1 bg-gray-100" />
-                    </div>
+                  <div>
+                    <Label>Country</Label>
+                    <Input value="Ghana" disabled className="mt-1 bg-gray-100" />
                   </div>
                   <Button type="submit" className="bg-primary w-full md:w-auto">Continue to payment <ChevronRight className="ml-1 h-4 w-4" /></Button>
                 </form>
@@ -304,7 +294,6 @@ function CheckoutContent() {
                       {address.fullName}<br />
                       {address.addressLine1}<br />
                       {address.area}, {address.city}, {address.region}<br />
-                      {address.postalCode}<br />
                       Phone: {address.phone}
                     </div>
                   </div>
