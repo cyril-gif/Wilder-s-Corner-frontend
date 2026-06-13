@@ -14,7 +14,7 @@ export default function AboutOwnerPage() {
         <div className="bg-gradient-to-r from-primary to-orange-600 p-8 text-white text-center">
           <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-white shadow-lg mb-4">
             <Image
-              src="/owner.jpg"
+              src="/IMG_0683.jpeg"
               alt="Margaret Efia Essien - Founder"
               fill
               className="object-cover"
