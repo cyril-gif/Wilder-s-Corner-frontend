@@ -1,29 +1,81 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchProductById } from '@/lib/api';
 import Image from 'next/image';
 import { useState } from 'react';
-import { Star, ShoppingCart, Minus, Plus } from 'lucide-react';
+import { Star, ShoppingCart, Minus, Plus, MessageSquare, ThumbsUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import useCartStore from '@/store/cartStore';
+import useAuthStore from '@/store/authStore';
 import ProductGrid from '@/components/products/ProductGrid';
+import axios from '@/lib/api';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { user } = useAuthStore();
+  const queryClient = useQueryClient();
+  
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [reviewError, setReviewError] = useState('');
+  const [reviewSuccess, setReviewSuccess] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
     queryFn: () => fetchProductById(id as string),
   });
 
-  const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
   const addItem = useCartStore((state) => state.addItem);
-  const { items } = useCartStore();
+
+  // Submit review mutation
+  const submitReview = useMutation({
+    mutationFn: async () => {
+      const response = await axios.post(`/products/${id}/reviews`, {
+        rating,
+        comment,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      setReviewSuccess('Review submitted successfully!');
+      setComment('');
+      setRating(5);
+      setReviewError('');
+      // Refetch product to update reviews
+      queryClient.invalidateQueries({ queryKey: ['product', id] });
+      setTimeout(() => setReviewSuccess(''), 3000);
+    },
+    onError: (err: any) => {
+      setReviewError(err.response?.data?.message || 'Failed to submit review. Please try again.');
+      setTimeout(() => setReviewError(''), 3000);
+    },
+  });
+
+  const handleSubmitReview = () => {
+    if (!user) {
+      router.push('/auth/login?redirect=/products/' + id);
+      return;
+    }
+    if (!comment.trim()) {
+      setReviewError('Please write a comment');
+      return;
+    }
+    setSubmittingReview(true);
+    submitReview.mutate(undefined, {
+      onSettled: () => setSubmittingReview(false),
+    });
+  };
 
   if (isLoading) return <div className="container mx-auto px-4 py-8">Loading product...</div>;
   if (error || !product) return <div className="container mx-auto px-4 py-8">Product not found</div>;
@@ -42,12 +94,10 @@ export default function ProductDetailPage() {
       color: selectedColor,
       stock: product.stock,
     });
-    // Optional: show a toast notification
     alert('Added to cart!');
   };
 
   const handleBuyNow = () => {
-    // Add to cart first
     addItem({
       productId: product._id,
       name: product.name,
@@ -58,9 +108,14 @@ export default function ProductDetailPage() {
       color: selectedColor,
       stock: product.stock,
     });
-    // Then redirect to checkout
     router.push('/checkout');
   };
+
+  // Calculate average rating
+  const reviews = product.reviews || [];
+  const averageRating = reviews.length > 0
+    ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
+    : 0;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -73,7 +128,7 @@ export default function ProductDetailPage() {
           <div className="flex gap-2 mt-2">
             {product.images.slice(1, 5).map((img: string, i: number) => (
               <div key={i} className="relative h-20 w-20 bg-gray-100 rounded overflow-hidden cursor-pointer">
-                <Image src={img} alt={`₵{product.name} ₵{i+1}`} fill className="object-cover" />
+                <Image src={img} alt={`${product.name} ${i+1}`} fill className="object-cover" />
               </div>
             ))}
           </div>
@@ -85,10 +140,10 @@ export default function ProductDetailPage() {
           <div className="flex items-center gap-2 mb-3">
             <div className="flex text-yellow-500">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className={`h-4 w-4 ₵{i < Math.floor(product.ratings) ? 'fill-current' : ''}`} />
+                <Star key={i} className={`h-4 w-4 ${i < Math.floor(averageRating) ? 'fill-current' : ''}`} />
               ))}
             </div>
-            <span className="text-sm text-gray-500">({product.reviews?.length || 0} reviews)</span>
+            <span className="text-sm text-gray-500">({reviews.length} reviews)</span>
           </div>
           <div className="mb-4">
             <span className="text-3xl text-primary font-bold">₵{price.toLocaleString()}</span>
@@ -105,7 +160,7 @@ export default function ProductDetailPage() {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`border rounded px-3 py-1 text-sm ₵{selectedSize === size ? 'border-primary bg-primary/10' : 'border-gray-300'}`}
+                    className={`border rounded px-3 py-1 text-sm ${selectedSize === size ? 'border-primary bg-primary/10' : 'border-gray-300'}`}
                   >
                     {size}
                   </button>
@@ -136,16 +191,21 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs with Reviews */}
       <Tabs defaultValue="description" className="mb-12">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="description">Description</TabsTrigger>
           <TabsTrigger value="specifications">Specifications</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          <TabsTrigger value="reviews" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Reviews ({reviews.length})
+          </TabsTrigger>
         </TabsList>
+        
         <TabsContent value="description" className="bg-white p-4 rounded-lg">
           {product.description}
         </TabsContent>
+        
         <TabsContent value="specifications" className="bg-white p-4 rounded-lg">
           <ul>
             <li><strong>Brand:</strong> {product.brand || 'N/A'}</li>
@@ -153,18 +213,92 @@ export default function ProductDetailPage() {
             <li><strong>Material:</strong> {product.attributes?.material || 'N/A'}</li>
           </ul>
         </TabsContent>
+        
         <TabsContent value="reviews" className="bg-white p-4 rounded-lg">
-          {product.reviews?.length === 0 ? <p>No reviews yet.</p> : product.reviews?.map((review: any) => (
-            <div key={review._id} className="border-b py-3">
-              <div className="flex items-center gap-2">
-                <div className="flex text-yellow-500 text-sm">
-                  {[...Array(5)].map((_, i) => <Star key={i} className={`h-3 w-3 ₵{i < review.rating ? 'fill-current' : ''}`} />)}
-                </div>
-                <span className="font-medium">{review.user?.name}</span>
+          {/* Write a review section */}
+          <div className="mb-8 pb-4 border-b">
+            <h3 className="font-semibold text-lg mb-4">Write a Review</h3>
+            {reviewError && (
+              <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">
+                {reviewError}
               </div>
-              <p className="text-gray-600 text-sm mt-1">{review.comment}</p>
+            )}
+            {reviewSuccess && (
+              <div className="bg-green-100 text-green-700 p-3 rounded mb-4 text-sm">
+                {reviewSuccess}
+              </div>
+            )}
+            <div className="mb-3">
+              <Label className="block mb-2">Your Rating</Label>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRating(star)}
+                    className="focus:outline-none"
+                  >
+                    <Star className={`h-6 w-6 ${star <= rating ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'}`} />
+                  </button>
+                ))}
+              </div>
             </div>
-          ))}
+            <div className="mb-3">
+              <Label className="block mb-2">Your Review</Label>
+              <Textarea
+                placeholder="Share your experience with this product..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                rows={4}
+              />
+            </div>
+            <Button
+              onClick={handleSubmitReview}
+              disabled={submittingReview}
+              className="bg-primary"
+            >
+              {submittingReview ? 'Submitting...' : 'Submit Review'}
+            </Button>
+          </div>
+
+          {/* Customer reviews list */}
+          <h3 className="font-semibold text-lg mb-4">Customer Reviews</h3>
+          {reviews.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No reviews yet. Be the first to review this product!</p>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((review: any) => (
+                <div key={review._id} className="border-b pb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                        <span className="text-primary font-bold text-sm">
+                          {review.user?.name?.charAt(0).toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium">{review.user?.name || 'Anonymous'}</span>
+                        <div className="flex text-yellow-500 text-sm">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'fill-current' : ''}`} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 text-sm mt-1">{review.comment}</p>
+                  <div className="flex items-center gap-4 mt-2">
+                    <button className="flex items-center gap-1 text-xs text-gray-400 hover:text-primary">
+                      <ThumbsUp className="h-3 w-3" /> Helpful (0)
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
