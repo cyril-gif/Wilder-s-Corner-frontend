@@ -52,7 +52,7 @@ export default function MobileNav() {
             <div className="flex items-center gap-3 mb-3">
               <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-primary bg-gray-200 flex items-center justify-center">
                 <Image
-                  src="/owner.jpg"
+                  src="/IMG_0683.jpeg"
                   alt="Margaret Efia Essien - Founder"
                   width={56}
                   height={56}
