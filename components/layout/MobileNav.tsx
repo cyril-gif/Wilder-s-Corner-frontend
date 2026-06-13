@@ -53,7 +53,7 @@ export default function MobileNav() {
               <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-primary bg-gray-200 flex items-center justify-center">
                 <Image
                   src="/owner.jpg"
-                  alt="Pascal Lantam Gbate - Founder"
+                  alt="Margaret Efia Essien - Founder"
                   width={56}
                   height={56}
                   className="object-cover rounded-full"
