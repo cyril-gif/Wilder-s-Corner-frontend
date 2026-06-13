@@ -24,7 +24,7 @@ export default function AboutOwnerPage() {
           <p className="text-white/90 mt-1">Founder & CEO of Wilder's Corner</p>
         </div>
         
-        {/* Content */}
+        
         <div className="p-6 md:p-8">
           <div className="mb-8">
             <Quote className="h-8 w-8 text-primary/30 mb-2" />
