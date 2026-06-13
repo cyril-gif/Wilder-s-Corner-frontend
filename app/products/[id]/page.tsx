@@ -40,28 +40,29 @@ export default function ProductDetailPage() {
 
   // Submit review mutation
   const submitReview = useMutation({
-    mutationFn: async () => {
-      const response = await axios.post(`/products/${id}/reviews`, {
-        rating,
-        comment,
-      });
-      return response.data;
-    },
-    onSuccess: () => {
-      setReviewSuccess('Review submitted successfully!');
-      setComment('');
-      setRating(5);
-      setReviewError('');
-      // Refetch product to update reviews
-      queryClient.invalidateQueries({ queryKey: ['product', id] });
-      setTimeout(() => setReviewSuccess(''), 3000);
-    },
-    onError: (err: any) => {
-      setReviewError(err.response?.data?.message || 'Failed to submit review. Please try again.');
-      setTimeout(() => setReviewError(''), 3000);
-    },
-  });
-
+  mutationFn: async () => {
+    // Use the product's actual _id from the fetched product data
+    if (!product?._id) throw new Error('Product ID not found');
+    const response = await axios.post(`/products/${product._id}/reviews`, {
+      rating,
+      comment,
+    });
+    return response.data;
+  },
+  onSuccess: () => {
+    setReviewSuccess('Review submitted successfully!');
+    setComment('');
+    setRating(5);
+    setReviewError('');
+    queryClient.invalidateQueries({ queryKey: ['product', id] });
+    setTimeout(() => setReviewSuccess(''), 3000);
+  },
+  onError: (err: any) => {
+    setReviewError(err.response?.data?.message || 'Failed to submit review. Please try again.');
+    setTimeout(() => setReviewError(''), 3000);
+  },
+});
+  
   const handleSubmitReview = () => {
     if (!user) {
       router.push('/auth/login?redirect=/products/' + id);
