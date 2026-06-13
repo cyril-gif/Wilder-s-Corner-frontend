@@ -23,7 +23,7 @@ export default function TermsPage() {
           By placing an order, you agree to pay the specified price and any applicable taxes or shipping fees. We reserve the right to refuse or cancel any order for any reason.
         </p>
         <p className="mb-4">
-          We accept Cash on Delivery and Card payments via Paystack. All payments are processed securely.
+          We accept Card payments via Paystack. All payments are processed securely.
         </p>
         
         <h2 className="text-2xl font-semibold mt-8 mb-4">4. Shipping and Delivery</h2>
@@ -33,7 +33,7 @@ export default function TermsPage() {
         
         <h2 className="text-2xl font-semibold mt-8 mb-4">5. Returns and Refunds</h2>
         <p className="mb-4">
-          We accept returns within 7 days of delivery for defective or incorrect products. Items must be unused and in original packaging. Refunds will be processed within 14 days of receiving the returned item.
+          We accept returns within 1 days of delivery for defective or incorrect products. Items must be unused and in original packaging. Refunds will be processed within 7 days of receiving the returned item.
         </p>
         
         <h2 className="text-2xl font-semibold mt-8 mb-4">6. Account Responsibility</h2>
