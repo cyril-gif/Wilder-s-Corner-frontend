@@ -38,7 +38,7 @@ export default function AboutOwnerPage() {
             <div>
               <h2 className="text-xl font-semibold text-gray-800 mb-3">My Journey</h2>
               <p>
-                Growing up in the Upper West Region, I saw firsthand how hard it was for people to 
+                Staying in the Upper West Region, I saw firsthand how hard it was for people to 
                 access quality products at fair prices. Many had to travel long distances to regional 
                 capitals just to buy basic items like shoes, bags, or hair products.
               </p>
