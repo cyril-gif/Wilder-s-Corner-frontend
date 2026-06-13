@@ -55,7 +55,7 @@ export default function TermsPage() {
         <p className="mb-4">
           Questions about these Terms should be sent to:<br />
           Email: <strong>legal@wilderscorner.com</strong><br />
-          Phone: <strong>+233 59 504 6967</strong>
+          Phone: <strong>+233 27 180 8592</strong>
         </p>
         
         <div className="bg-gray-50 p-4 rounded-lg mt-8">
