@@ -1,97 +1,61 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import useCartStore from '@/store/cartStore';
 import useAuthStore from '@/store/authStore';
 import axios from '@/lib/api';
 
 // Ghana regions with cities and areas
-// Complete Ghana regions with cities and areas
 const locationData: Record<string, Record<string, string[]>> = {
   'Greater Accra': {
-    'Accra': ['Airport Residential', 'Cantonments', 'Labone', 'Osu', 'Ringway Central', 'Roman Ridge', 'East Legon', 'West Legon', 'Dzorwulu', 'Achimota', 'North Kaneshie', 'South Kaneshie', 'Darkuman', 'Mamprobi', 'Chorkor', 'Korle Bu', 'Adabraka', 'Asylum Down', 'Tudu', 'Jamestown', 'Ushertown', 'Christiansborg', 'Nima', 'Maamobi', 'Alajo', 'Kokomlemle', 'Abelenkpe', 'Airport West'],
-    'Tema': ['Community 1', 'Community 2', 'Community 3', 'Community 4', 'Community 5', 'Community 6', 'Community 7', 'Community 8', 'Community 9', 'Community 10', 'Community 11', 'Community 12', 'Community 25', 'Tema New Town', 'Tema Fishing Harbour'],
-    'Adenta': ['Adenta New Site', 'Adenta Old Site', 'Adenta Community 12', 'Adenta West Hills', 'Brewery'],
-    'Madina': ['Madina Zongo', 'Madina Estate', 'Madina New Road', 'Madina Atomic Junction', 'Madina SSNIT Flats', 'Madina Council'],
-    'Ashaiman': ['Ashaiman Zongo', 'Ashaiman Estate', 'Ashaiman New Town', 'Ashaiman Lebanon', 'Ashaiman Tulaku', 'Ashaiman Makola', 'Ashaiman Main Market'],
-    'Dansoman': ['Dansoman Estate', 'Dansoman Sahara', 'Dansoman Last Stop', 'Dansoman SSNIT Flats', 'Dansoman Junction'],
-    'Dodowa': ['Dodowa Central', 'Kpone', 'Sege', 'Ada', 'Prampram', 'Ningo', 'Old Ningo'],
-    'Amasaman': ['Amasaman Central', 'Ayawaso', 'Gbawe', 'Bortianor', 'Weija', 'Mallam', 'Oblogo'],
+    'Accra': ['Airport Residential', 'Cantonments', 'Labone', 'Osu', 'East Legon', 'West Legon', 'Dzorwulu', 'Achimota'],
+    'Tema': ['Community 1', 'Community 2', 'Community 3', 'Community 4', 'Community 5', 'Community 6', 'Community 7', 'Community 8', 'Community 9', 'Community 10', 'Community 11', 'Community 12', 'Community 25'],
+    'Adenta': ['Adenta New Site', 'Adenta Old Site', 'Adenta West Hills'],
+    'Madina': ['Madina Zongo', 'Madina Estate', 'Madina New Road'],
   },
   'Ashanti': {
-    'Kumasi': ['Adum', 'Bantama', 'Asokwa', 'Tafo', 'Oforikrom', 'Santasi', 'Ahinsan', 'Atonsu', 'Kwadaso', 'Buokrom Estate', 'Patasi', 'Danyame', 'Bohyen', 'Ayigya', 'Kentinkrono', 'Manhyia', 'Asafo', 'Amakom', 'Suame', 'Bompata', 'Abuakwa', 'Asem', 'Nhyiaeso', 'Moshie Zongo', 'Abrepo', 'Abrepo Junction', 'Bekwai Roundabout', 'Anloga Junction', 'Atonsu-Agogo', 'Chirapatre', 'Danyame-Barracks', 'Dichemso', 'Emesuo', 'Fumesua', 'Gyinyase', 'Kaase', 'Krofrom', 'Kwadaso Estate', 'Mamponteng', 'Oduom', 'Pankrono', 'Ridge', 'Sofoline'],
-    'Obuasi': ['Obuasi Central', 'Bekwai', 'Tweneboa Kodua', 'Akaporiso', 'Kwabenakwa', 'Anyinam', 'Binsere', 'Dunkwa', 'Mile 9', 'New Odumase', 'Obuasi Goldfields', 'Tarkwa Breman'],
-    'Ejisu': ['Ejisu Central', 'Bonwire', 'Kwaso', 'Adadientem', 'Besease', 'Juaben', 'Abenase', 'Domeabra', 'Ejuraman', 'Krapa', 'Nkwanta', 'Ofoase'],
-    'Mampong': ['Mampong Central', 'Kofiase', 'Asaam', 'Drobonso', 'Deduako', 'Agona', 'Amoafo', 'Aponapon', 'Asaaman', 'Asaamang', 'Asante Akyem', 'Beposo', 'Bodomase', 'Buoho'],
-    'Konongo': ['Konongo Central', 'Odumase', 'Asaaman', 'Bosome', 'Freetown', 'Nkwanta', 'Wioso', 'Anyinofi'],
-    'Effiduase': ['Effiduase Central', 'Asokore', 'Asokore Mampong', 'Kokoase', 'Adanwomase', 'Ahensan', 'Asamang', 'Asante Bekwai'],
+    'Kumasi': ['Adum', 'Bantama', 'Asokwa', 'Tafo', 'Oforikrom', 'Santasi', 'Ahinsan', 'Atonsu', 'Kwadaso', 'Patasi'],
+    'Obuasi': ['Obuasi Central', 'Bekwai', 'Akaporiso'],
   },
   'Northern': {
-    'Tamale': ['Zogbeli', 'Lamashegu', 'Dungu', 'Bilpela', 'Gumani', 'Dabokpa', 'Kukuo', 'Choggu', 'Vitting', 'Jisonaayili', 'Tishigu', 'Kaladan', 'Sakasaka', 'Gurugu', 'Siyi', 'Kamina Barracks', 'Lamashegu Zongo', 'Bomdan', 'Fuo', 'Kamina', 'Kukuo Zongo', 'Malbia', 'Nayilifong', 'Sagnerigu', 'Tisigu', 'Tugu-Yepala', 'Victory Road', 'Taha'],
-    'Yendi': ['Yendi Central', 'Gundogu', 'Gushegu', 'Zabzugu', 'Bimbilla', 'Kpandai', 'Salaga', 'Chereponi', 'Gbintiri', 'Jagberi', 'Nakpali', 'Nayoko', 'Nyensung', 'Piong', 'Saboba', 'Tatale', 'Wapuli', 'Zangbalun'],
-    'Sagnarigu': ['Sagnarigu Central', 'Kalpohini', 'Kpalsi', 'Nyanshegu', 'Gulungu', 'Jisonanyili', 'Sherigu', 'Tiyumba', 'Katariga', 'Kurugu'],
+    'Tamale': ['Zogbeli', 'Lamashegu', 'Dungu', 'Bilpela', 'Gumani', 'Dabokpa', 'Kukuo', 'Choggu', 'Vitting', 'Jisonaayili'],
   },
   'Volta': {
-    'Ho': ['Ho Bankoe', 'Ho Dome', 'Ho Kpodzi', 'Ho Fiave', 'Agortime', 'Akatsi', 'Amedzofe', 'Anfoega', 'Awudome', 'Bame', 'Gbi', 'Hohoe', 'Klefe', 'Kpedze', 'Kpele', 'Kpeme', 'Mataheko', 'Sokode', 'Takla', 'Tsito', 'Vane'],
-    'Hohoe': ['Hohoe Central', 'Gbi', 'Akpafu', 'Liati', 'Afajato', 'Alavanyo', 'Bame', 'Biakpa', 'Fodome', 'Have', 'Kadjebi', 'Kpasa', 'Kpeve', 'Likpe', 'Logba', 'Nkonya', 'Nyagbo', 'Santrokofi', 'Tafi', 'Wli', 'Wodome', 'Worawora'],
-    'Keta': ['Keta Central', 'Abor', 'Afife', 'Agbozume', 'Aflao', 'Agblekpui', 'Anloga', 'Atiavi', 'Denu', 'Dzelukope', 'Fiadame', 'Gbefi', 'Horvi', 'Kedzi', 'Klikor', 'Kpone', 'Mataheko', 'Penyi', 'Salom', 'Seva', 'Srogboe', 'Tegbi', 'Toko', 'Vui', 'Weta'],
-    'Jasikan': ['Jasikan Central', 'Bowiri', 'Buem', 'Kadjebi', 'Nkwanta', 'Oti', 'Pepesu', 'Tutukpene', 'Ve Koloenu', 'Worawora', 'Wurupong'],
+    'Ho': ['Ho Bankoe', 'Ho Dome', 'Ho Kpodzi', 'Ho Fiave'],
+    'Hohoe': ['Hohoe Central', 'Gbi', 'Akpafu'],
   },
   'Western': {
-    'Takoradi': ['Apremdo', 'Anaji', 'Effiakuma', 'Kansaworado', 'Nkontompo', 'Nkroful', 'Assakae', 'New Takoradi', 'Kwesimintsim', 'Tankwia', 'Beach Road', 'Effia Nkwanta', 'Fijai', 'Kojokrom', 'Mpintsin', 'Nkotompo', 'Sekondi', 'Adiembra', 'Amesima', 'Anaji Estate', 'Asem'],
-    'Sekondi': ['Essikado', 'Sekondi Central', 'Kojokrom', 'Ewusiejo', 'Adiaso', 'Adiembra', 'Ahenboboano', 'Akodzo', 'Annieville', 'Bakaano', 'Bewyerba', 'Brawire', 'Brempong', 'Brinja', 'Churchil', 'Ekusie', 'Essia', 'Fanti Manso', 'Fijai', 'Guinea Worm'],
-    'Tarkwa': ['Tarkwa Central', 'Aboso', 'Bogoso', 'Dumasi', 'Huni Valley', 'Nkonya', 'Nsuta', 'Tamso', 'Teberebie', 'Wassa Akropong', 'Apinto', 'Aklika', 'Amanful', 'Boku', 'Daboase', 'Abuoso'],
-  },
-  'Eastern': {
-    'Koforidua': ['Betom', 'Srodae', 'Adweso', 'Effiduase', 'New Juaben', 'Old Tafo', 'Oyoko', 'Jumapo', 'Asokore', 'Nsukwao', 'Abakrampa', 'Akosombo', 'Akuse', 'Asesease', 'Asuboi', 'Akwadum', 'Bunso', 'Kukurantumi', 'Mampong', 'Maase', 'Nkurakan', 'Nkwatia', 'Obawale', 'Suhum', 'Tafo', 'Zongo'],
-    'Nkawkaw': ['Nkawkaw Central', 'Mpraeso', 'Abetifi', 'Pepease', 'Aburi', 'Larteh', 'Mamfe', 'Adukrom', 'Akropong', 'Amanokrom', 'Apirede', 'Asamankese', 'Asesewa', 'Ayensuano', 'Dome', 'Kade', 'Kibi', 'Koforidua', 'Kyebi', 'Mangoase', 'Nsawam', 'Nsuapemso', 'Oda', 'Oduponkpehe', 'Pokuase', 'Somanya', 'Suhum', 'Tafo'],
-    'Akwatia': ['Akwatia Central', 'Oda', 'Asamankese', 'Aburi', 'Agormanya', 'Akroso', 'Akyem', 'Anyinam', 'Apoli', 'Asafo', 'Asamankese', 'Asuboi', 'Atewa', 'Atti', 'Awisa', 'Begoro', 'Bunso', 'Dome', 'Juaso', 'Kade', 'Kwabeng', 'Mame', 'Mankrong', 'Nankese', 'Nkwapaw', 'Nkwaten', 'Ofoase', 'Osiem', 'Pakro', 'Pameng', 'Pankrono', 'Suhum', 'Yilo Krobo'],
+    'Takoradi': ['Apremdo', 'Anaji', 'Effiakuma', 'Kansaworado', 'Nkontompo', 'New Takoradi', 'Kwesimintsim'],
+    'Sekondi': ['Essikado', 'Sekondi Central', 'Kojokrom'],
   },
   'Central': {
-    'Cape Coast': ['Amamoma', 'Kakumdo', 'Adisadel', 'Nkanfoa', 'Pedu', 'Bakaano', 'Anafo', 'Anaafo', 'Abura', 'Apewosika', 'Ayensu', 'Biriwa', 'Duakor', 'Ekon', 'Esikyir', 'Foso', 'Jukwa', 'Kakum', 'Kokodo', 'Kwapro', 'Mankesim', 'Moree', 'Nakwa', 'Nsusua', 'Ola', 'Okyere', 'Otuam', 'Sasun', 'Siwdo', 'Sofos', 'Srafa', 'Tandoro', 'Twifo'],
-    'Kasoa': ['Iron City', 'Opeikuma', 'Akweley', 'Lamptey Mills', 'Budumburam', 'Awutu Bereku', 'Awutu Senya', 'Bawjiase', 'Chinto', 'Dampase', 'Fetteh', 'Gomoa', 'Gyamfi', 'Kakraba', 'Kokrobite', 'Nduom', 'Nyanyano', 'Obom', 'Ofaakor', 'Ohwim', 'Onyadze', 'Papase', 'School Junction', 'Senya', 'Sowutuom', 'Weija', 'Winneba'],
-    'Winneba': ['Winneba Central', 'Ateitu', 'Atimu', 'Ayensudo', 'Gyatakrom', 'Hasi', 'Issakrom', 'Jukwa', 'Kojo Bedu', 'Mampong', 'Nyanyano', 'Sankor', 'Sasabi', 'Soccer', 'Sraha', 'Tete', 'Tikola', 'Yakum'],
+    'Cape Coast': ['Amamoma', 'Kakumdo', 'Adisadel', 'Nkanfoa', 'Pedu'],
+    'Kasoa': ['Iron City', 'Opeikuma', 'Akweley', 'Lamptey Mills'],
+  },
+  'Eastern': {
+    'Koforidua': ['Betom', 'Srodae', 'Adweso', 'Effiduase', 'New Juaben'],
+    'Nkawkaw': ['Nkawkaw Central', 'Mpraeso', 'Abetifi'],
   },
   'Bono': {
-    'Sunyani': ['New Dumasua', 'Penkwase', 'Nkwabeng', 'Fiapre', 'Yamfo', 'Abesim', 'Adantia', 'Adjoafua', 'Adokrom', 'Akrobi', 'Asufui', 'Aterakrom', 'Atronie', 'Awuom', 'Bechere', 'Benin', 'Benkasa', 'Bomaa', 'Buokum', 'Chiraa', 'Dadieso', 'Drobo', 'Japekrom', 'Kato', 'Kodie', 'Kwasi Bu', 'Mim', 'Nana Atta', 'Ntrobo', 'Odumase', 'Oforikrom', 'Papa', 'Pata', 'Pepedom', 'Sankore', 'Sinnadai', 'Tabora', 'Tain', 'Tano', 'Tanoboase', 'Tepa', 'Tisikasi', 'Wamfie', 'Wareto', 'Yamfo', 'Yaw Tufu'],
-    'Berekum': ['Berekum Central', 'Kato', 'Senase', 'Abesim', 'Adadiem', 'Adokrom', 'Adunafua', 'Agyeikrom', 'Akunkrom', 'Anana', 'Asueyi', 'Asura', 'Aterakrom', 'Bajia', 'Bechem', 'Bomaa', 'Buokum', 'Dormaa', 'Dormaa Ahenkro', 'Drobo', 'Duayaw Nkwanta', 'Japekrom', 'Jinijini', 'Kato', 'Kato Krom', 'Kenyasi', 'Mensakrom', 'Mim', 'Nante', 'Nkrankrom', 'Nkronua', 'Nkwanta', 'Nsoatre', 'Odumase', 'Papa', 'Sankore', 'Sinnadai', 'Tain', 'Tano', 'Tanoboase', 'Tepa', 'Tisikasi', 'Wamfie'],
-  },
-  'Bono East': {
-    'Techiman': ['Techiman Central', 'Kintampo', 'Nkoranza', 'Atebubu', 'Prang', 'Jema', 'Kwame Danso', 'Akomadan', 'Amoma', 'Asantekwa', 'Baffo', 'Bah', 'Boankra', 'Bono', 'Bonso', 'Bontuku', 'Branam', 'Bredi', 'Buoku', 'Busua', 'Forikrom', 'Jama', 'Kajeji', 'Kawampe', 'Kenten', 'Kera', 'Kete', 'Krabi', 'Kranso', 'Krobo', 'Kwaku', 'Kwame', 'Kwame Danso', 'Kwasi', 'Lombardo', 'Maase', 'Manso', 'Mim', 'Moma', 'Nago', 'New Longoro', 'Nimkor', 'Nkwanta', 'Nkwanta South', 'Nnwu', 'Nsoatre', 'Nyomoase', 'Oforikrom', 'Patakro', 'Peboase', 'Pepasah', 'Praso', 'Saboa', 'Sampa', 'Sankore', 'Sawla', 'Sunyani', 'Tamfoe', 'Tano'],
-  },
-  'Ahafo': {
-    'Goaso': ['Goaso Central', 'Bechem', 'Duayaw Nkwanta', 'Kenyasi', 'Mim', 'Hwidiem', 'Kukuom', 'Akrodie', 'Asutifi', 'Biadan', 'Bono', 'Buoku', 'Dadieso', 'Dama', 'Donkorkrom', 'Fawoman', 'Fetentaa', 'Gambia', 'Kaserem', 'Kenyase', 'Koase', 'Koforidua', 'Kukuom', 'Kwadwo', 'Kwaku', 'Kwasi', 'Mamfe', 'Manso', 'Mim', 'Nana', 'Nante', 'Nkrankrom', 'Nkwanta', 'Nsuta', 'Ntotroso', 'Ntotoroso', 'Papa', 'Pata', 'Pebaa', 'Pepedom', 'Sankore', 'Sinnadai', 'Supe', 'Tain', 'Tano', 'Tanoboase', 'Tepa', 'Tisikasi', 'Wamfie', 'Wareto', 'Yamfo', 'Yaw', 'Yaw Tufu'],
-  },
-  'Oti': {
-    'Dambai': ['Dambai Central', 'Jasikan', 'Kadjebi', 'Kete Krachi', 'Nkwanta', 'Worawora', 'Brewaniase', 'Alavanyo', 'Akan', 'Akrofu', 'Amedzope', 'Ameti', 'Apewu', 'Asabla', 'Asato', 'Asibi', 'Asonyako', 'Ayibonte', 'Badi', 'Baglo', 'Baii', 'Banda', 'Battor', 'Bawe', 'Beye', 'Bibiana', 'Bikoe', 'Bishi', 'Bonya', 'Boso', 'Botoku', 'Bowiri', 'Buafi', 'Bume', 'Challa', 'Chamle', 'Chinderi', 'Dambai', 'Damja', 'Dodo', 'Dofor', 'Dorma', 'Doyon', 'Dzemeni', 'Dzroke', 'Gbadjomo', 'Gbagba', 'Gbemini', 'Gbite', 'Georn', 'Gida', 'Gidigbe', 'Ginatso', 'Goke', 'Gona', 'Gosung', 'Grange', 'Gwei', 'Haho', 'Hakob', 'Haman', 'Hamoni', 'Harness', 'Hatasu', 'Hawah', 'Hembe', 'Hina', 'Hlodzo', 'Hodawu', 'Hohoe', 'Honuta', 'Horm'],
-  },
-  'North East': {
-    'Nalerigu': ['Nalerigu Central', 'Bunkpurugu', 'Gambaga', 'Walewale', 'Yagaba', 'Langbensi', 'Chereponi', 'Gbingban', 'Gbintiri', 'Guma', 'Gushi', 'Jagberi', 'Janga', 'Kadelso', 'Kaku', 'Kanda', 'Karikaru', 'Kate', 'Kobliman', 'Kpado', 'Kpajai', 'Kpaligu', 'Kparigu', 'Kpasengu', 'Kpatili', 'Kpatiok', 'Kperisi', 'Kpikpira', 'Kponbo', 'Kukoyiri', 'Kukuo', 'Kunbungu', 'Kunfuse', 'Kungu', 'Kunko', 'Kunyukuo', 'Kusanaba', 'Kuunduri', 'Kwahu', 'Kwaku', 'Kwame', 'Kwasi', 'Langbensi', 'Langbensi Kukuo', 'Lani', 'Lanten', 'Lantungo', 'Laribanga', 'Lawa', 'Mabeng', 'Mabure', 'Makesi', 'Malik', 'Malima', 'Mamankoma', 'Mamprugul', 'Mamprusi', 'Mamprugu', 'Manko', 'Manso', 'Mari', 'Marilyn'],
-  },
-  'Savannah': {
-    'Damango': ['Damango Central', 'Salaga', 'Daboya', 'Bole', 'Buipe', 'Sawla', 'Kpandai', 'Banda', 'Banda Nkwanta', 'Banda Tepo', 'Bandabeya', 'Bandadabi', 'Bandadi', 'Bandai', 'Bandal', 'Bandawe', 'Bandigbe', 'Bandima', 'Bandina', 'Bandini', 'Bandon', 'Bandu', 'Bandun', 'Banjam', 'Banko', 'Bao', 'Bape', 'Barabara', 'Barbe', 'Bario', 'Basare', 'Basi', 'Bata', 'Batagbene', 'Batak', 'Bato', 'Batoma', 'Batong', 'Bature', 'Bawa', 'Baya', 'Bazua', 'Bechi', 'Begu', 'Behinye', 'Bekai', 'Bekitik', 'Bembasi', 'Bena', 'Benga', 'Beni', 'Benim', 'Benne', 'Beposo', 'Bera', 'Beri', 'Beriyi', 'Besi', 'Beyi', 'Bianima', 'Biasi', 'Bibiri', 'Bie', 'Bikam', 'Bikani', 'Bile', 'Bimbila'],
-  },
-  'Upper East': {
-    'Bolgatanga': ['Bolgatanga Central', 'Bawku', 'Navrongo', 'Paga', 'Sandema', 'Zuarungu', 'Bongo', 'Garua', 'Kassena', 'Kusaug', 'Bolgatanga SSNIT Flats', 'Bolgatanga Estate', 'Bolgatanga Town', 'Bongo Central', 'Bongo Gorigo', 'Bongo Soe', 'Bongo Zorko', 'Bawku Abugri', 'Bawku Adaboya', 'Bawku Central', 'Bawku Natinga', 'Bawku Sabonjida', 'Bawku Soe', 'Bawku Wusuga', 'Bawku Zongo', 'Kassena Nankana', 'Kassena Nankana East', 'Kassena Nankana West', 'Navrongo Central', 'Navrongo Konchogo', 'Navrongo Paga', 'Navrongo Tono', 'Paga Central', 'Paga North', 'Paga South', 'Sandema Central', 'Sandema North', 'Sandema South', 'Zuarungu Central', 'Zuarungu North', 'Zuarungu South'],
+    'Sunyani': ['New Dumasua', 'Penkwase', 'Nkwabeng', 'Fiapre'],
+    'Berekum': ['Berekum Central', 'Kato', 'Senase'],
   },
   'Upper West': {
-    'Wa': ['Wa Central', 'Jirapa', 'Nandom', 'Lawra', 'Tumu', 'Hamile', 'Daffiama', 'Kaleo', 'Gwollu', 'Wa North', 'Wa South', 'Wa SSNIT Flats', 'Wa Estate', 'Wa Town', 'Jirapa Central', 'Jirapa Raya', 'Jirapa Zongo', 'Nandom Central', 'Nandom Gbengbe', 'Nandom Kokoligu', 'Nandom Nadowli', 'Lawra Central', 'Lawra Eremon', 'Lawra Fielmuo', 'Lawra Sombo', 'Tumu Central', 'Tumu Dema', 'Tumu Nandwene', 'Tumu Yagtuur', 'Hamile Central', 'Hamile Pafoe', 'Hamile Sissala', 'Daffiama Central', 'Daffiama Issa', 'Daffiama Sissala', 'Kaleo Central', 'Kaleo Nadowli', 'Kaleo Wa', 'Gwollu Central', 'Gwollu Tumu', 'Gwollu Wa'],
+    'Wa': ['Wa Central', 'Dobile', 'Kambali', 'Kpongu', 'Sombo', 'Wa Zongo'],
   },
-  'Western North': {
-    'Sefwi Wiawso': ['Sefwi Wiawso Central', 'Sefwi Asawinso', 'Sefwi Boako', 'Bibiani', 'Nkroful', 'Juaboso', 'Akontombra', 'Bodi', 'Bia', 'Bia West', 'Bia East', 'Suaman', 'Aowin', 'Aowin Central', 'Aowin East', 'Aowin West', 'Bibiani Anhwiaso Bekwai', 'Bibiani Central', 'Bibiani North', 'Bibiani South', 'Bodi Central', 'Bodi North', 'Bodi South', 'Juaboso Central', 'Juaboso North', 'Juaboso South', 'Sefwi Asafo', 'Sefwi Bekwai', 'Sefwi Debiso', 'Sefwi Essam', 'Sefwi Wiawso North', 'Sefwi Wiawso South', 'Sefwi Wiawso West', 'Suaman Central', 'Suaman East', 'Suaman West'],
+  'Upper East': {
+    'Bolgatanga': ['Bolgatanga Central', 'Zuarungu', 'Bongo'],
+    'Bawku': ['Bawku Central', 'Manga', 'Zebilla'],
   },
 };
 
 const allRegions = Object.keys(locationData);
 
-
-// Helper to get cities for selected region
 const getCities = (region: string) => Object.keys(locationData[region] || {});
 const getAreas = (region: string, city: string) => locationData[region]?.[city] || [];
 
@@ -133,7 +97,6 @@ function CheckoutContent() {
   const { items, getSubtotal, clearCart } = useCartStore();
   const { user } = useAuthStore();
   const [step, setStep] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState('cash_on_delivery');
   const [loading, setLoading] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
   const [address, setAddress] = useState({
@@ -183,7 +146,7 @@ function CheckoutContent() {
         postalCode: address.postalCode,
         country: 'Ghana',
       },
-      paymentMethod,
+      paymentMethod: 'paystack',
       itemsPrice: subtotal,
       shippingPrice: shipping,
       totalPrice: total,
@@ -194,29 +157,24 @@ function CheckoutContent() {
 
   const handleAddressSubmit = (e: React.FormEvent) => { e.preventDefault(); if (validateAddress()) setStep(2); };
   
-  const handleCOD = async () => {
-    setLoading(true);
-    try {
-      await createOrder();
-      clearCart();
-      router.push('/orders?success=true');
-    } catch (err: any) { alert(err.response?.data?.message || 'Order failed'); }
-    finally { setLoading(false); }
-  };
-  
   const handlePaystackFlow = async () => {
     setLoading(true);
     try {
       const order = await createOrder();
       setCreatedOrderId(order._id);
-    } catch (err: any) { alert(err.response?.data?.message || 'Order creation failed'); }
-    finally { setLoading(false); }
+    } catch (err: any) { 
+      alert(err.response?.data?.message || 'Order creation failed'); 
+    } finally { 
+      setLoading(false); 
+    }
   };
   
   const onPaystackSuccess = async () => {
     try {
       await axios.put(`/orders/${createdOrderId}/pay`, { status: 'completed' });
-    } catch (err) { console.error('Failed to update payment status', err); }
+    } catch (err) { 
+      console.error('Failed to update payment status', err); 
+    }
     window.location.href = '/orders?payment=success';
   };
   
@@ -240,7 +198,7 @@ function CheckoutContent() {
         {/* Step indicator */}
         <div className="mb-10">
           <div className="flex items-center justify-center gap-2 md:gap-4">
-            {[1,2,3].map(i => (
+            {[1, 2, 3].map(i => (
               <div key={i} className="flex items-center">
                 <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm font-semibold ${step >= i ? 'bg-primary text-white shadow-md' : 'bg-gray-200 text-gray-500'}`}>{i}</div>
                 {i < 3 && <div className="w-12 md:w-20 h-0.5 bg-gray-200 mx-1 md:mx-2" />}
@@ -316,22 +274,26 @@ function CheckoutContent() {
                 </form>
               </div>
             )}
+            
             {step === 2 && (
               <div className="bg-white rounded-2xl shadow-card p-6 md:p-8">
-                <h2 className="text-xl md:text-2xl font-bold mb-6">Payment method</h2>
-                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
-                  <div className="flex justify-between items-center border rounded-xl p-4 hover:border-primary">
-                    <div className="flex items-center gap-3"><RadioGroupItem value="cash_on_delivery" id="cod" /><Label htmlFor="cod" className="font-medium">Cash on delivery</Label></div>
-                    <span className="text-green-600 text-sm">Pay when you receive</span>
+                <h2 className="text-xl md:text-2xl font-bold mb-6">Payment Method</h2>
+                <div className="border rounded-xl p-4 bg-green-50 border-green-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-white"></div>
+                    </div>
+                    <span className="font-medium">Card Payment (Paystack)</span>
                   </div>
-                  <div className="flex justify-between items-center border rounded-xl p-4 hover:border-primary">
-                    <div className="flex items-center gap-3"><RadioGroupItem value="paystack" id="paystack" /><Label htmlFor="paystack" className="font-medium">Card payment (Paystack)</Label></div>
-                    <span className="text-blue-600 text-sm">Secure online payment</span>
-                  </div>
-                </RadioGroup>
-                <div className="flex justify-between mt-8"><Button variant="outline" onClick={() => setStep(1)}><ChevronLeft className="mr-1 h-4 w-4" /> Back</Button><Button onClick={() => setStep(3)} className="bg-primary">Review order <ChevronRight className="ml-1 h-4 w-4" /></Button></div>
+                  <p className="text-sm text-gray-600 mt-2 ml-7">Secure online payment with card, mobile money, or bank transfer</p>
+                </div>
+                <div className="flex justify-between mt-8">
+                  <Button variant="outline" onClick={() => setStep(1)}><ChevronLeft className="mr-1 h-4 w-4" /> Back</Button>
+                  <Button onClick={() => setStep(3)} className="bg-primary">Review order <ChevronRight className="ml-1 h-4 w-4" /></Button>
+                </div>
               </div>
             )}
+            
             {step === 3 && (
               <div className="bg-white rounded-2xl shadow-card p-6 md:p-8">
                 <h2 className="text-xl md:text-2xl font-bold mb-6">Review your order</h2>
@@ -348,21 +310,17 @@ function CheckoutContent() {
                   </div>
                   <div>
                     <div className="flex justify-between mb-2"><h3 className="font-semibold">Payment method</h3><button onClick={() => setStep(2)} className="text-primary text-sm">Edit</button></div>
-                    <div className="bg-gray-50 p-4 rounded-xl text-gray-700 text-sm">{paymentMethod === 'cash_on_delivery' ? 'Cash on delivery' : 'Card (Paystack)'}</div>
+                    <div className="bg-gray-50 p-4 rounded-xl text-gray-700 text-sm">Card Payment (Paystack)</div>
                   </div>
                   <div className="border-t pt-4">
                     <div className="flex justify-between text-gray-600 mb-2"><span>Subtotal</span><span>₵{subtotal.toLocaleString()}</span></div>
                     <div className="flex justify-between text-gray-600 mb-2"><span>Shipping</span><span>{shipping === 0 ? 'Free' : `₵${shipping.toLocaleString()}`}</span></div>
                     <div className="flex justify-between text-xl font-bold mt-3 pt-3 border-t"><span>Total</span><span>₵{total.toLocaleString()}</span></div>
                   </div>
-                  {paymentMethod === 'cash_on_delivery' ? (
-                    <Button onClick={handleCOD} disabled={loading} className="w-full bg-primary py-3">{loading ? 'Placing order...' : 'Place order (Cash on delivery)'}</Button>
+                  {!createdOrderId ? (
+                    <Button onClick={handlePaystackFlow} disabled={loading} className="w-full bg-primary py-3">{loading ? 'Creating order...' : 'Proceed to payment'}</Button>
                   ) : (
-                    !createdOrderId ? (
-                      <Button onClick={handlePaystackFlow} disabled={loading} className="w-full bg-primary py-3">{loading ? 'Creating order...' : 'Proceed to payment'}</Button>
-                    ) : (
-                      <PaystackButton email={user.email} amount={total} orderId={createdOrderId} onSuccess={onPaystackSuccess} onClose={onPaystackClose} />
-                    )
+                    <PaystackButton email={user.email} amount={total} orderId={createdOrderId} onSuccess={onPaystackSuccess} onClose={onPaystackClose} />
                   )}
                 </div>
               </div>
