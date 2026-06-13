@@ -5,16 +5,78 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchProductById } from '@/lib/api';
 import Image from 'next/image';
 import { useState } from 'react';
-import { Star, ShoppingCart, Minus, Plus, MessageSquare, ThumbsUp } from 'lucide-react';
+import { Star, ShoppingCart, Minus, Plus, MessageSquare, ThumbsUp, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import useCartStore from '@/store/cartStore';
 import useAuthStore from '@/store/authStore';
 import ProductGrid from '@/components/products/ProductGrid';
 import axios from '@/lib/api';
+
+// Size guide component
+function SizeGuide() {
+  const [showGuide, setShowGuide] = useState(false);
+  
+  const sizeChart = [
+    { us: 'US 5', uk: 'UK 3', eu: 'EU 35', foot: '22.5 cm' },
+    { us: 'US 6', uk: 'UK 4', eu: 'EU 36', foot: '23.5 cm' },
+    { us: 'US 7', uk: 'UK 5', eu: 'EU 37', foot: '24.5 cm' },
+    { us: 'US 8', uk: 'UK 6', eu: 'EU 38', foot: '25.5 cm' },
+    { us: 'US 9', uk: 'UK 7', eu: 'EU 39', foot: '26.5 cm' },
+    { us: 'US 10', uk: 'UK 8', eu: 'EU 40', foot: '27.5 cm' },
+    { us: 'US 11', uk: 'UK 9', eu: 'EU 41', foot: '28.5 cm' },
+    { us: 'US 12', uk: 'UK 10', eu: 'EU 42', foot: '29.5 cm' },
+  ];
+
+  return (
+    <>
+      <button
+        onClick={() => setShowGuide(true)}
+        className="inline-flex items-center gap-1 text-xs text-primary hover:underline ml-2"
+        type="button"
+      >
+        <HelpCircle className="h-3 w-3" />
+        Size Guide
+      </button>
+      
+      {showGuide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowGuide(false)}>
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold">Shoe Size Guide</h3>
+              <button onClick={() => setShowGuide(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2">US</th>
+                    <th className="text-left py-2">UK</th>
+                    <th className="text-left py-2">EU</th>
+                    <th className="text-left py-2">Foot Length</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sizeChart.map((size, idx) => (
+                    <tr key={idx} className="border-b">
+                      <td className="py-2">{size.us}</td>
+                      <td className="py-2">{size.uk}</td>
+                      <td className="py-2">{size.eu}</td>
+                      <td className="py-2">{size.foot}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-500 mt-4">How to measure: Stand on a ruler, measure from heel to longest toe.</p>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -38,47 +100,29 @@ export default function ProductDetailPage() {
 
   const addItem = useCartStore((state) => state.addItem);
 
-  // Submit review mutation
   const submitReview = useMutation({
-  mutationFn: async () => {
-    if (!product?._id) throw new Error('Product ID not found');
-    const response = await axios.post(`/products/${product._id}/reviews`, {
-      rating,
-      comment,
-    });
-    return response.data;
-  },
-  onSuccess: (data) => {
-    // Check if the response indicates success
-    if (data.success === true || data.data) {
+    mutationFn: async () => {
+      if (!product?._id) throw new Error('Product ID not found');
+      const response = await axios.post(`/products/${product._id}/reviews`, {
+        rating,
+        comment,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
       setReviewSuccess('Review submitted successfully!');
       setComment('');
       setRating(5);
       setReviewError('');
       queryClient.invalidateQueries({ queryKey: ['product', id] });
-    } else {
-      setReviewError(data.message || 'Failed to submit review');
-    }
-    setTimeout(() => setReviewSuccess(''), 3000);
-  },
-  onError: (err: any) => {
-    // Check if the review was actually created despite error
-    if (err.response?.status === 500) {
-      // Still refresh the product to show the review
-      queryClient.invalidateQueries({ queryKey: ['product', id] });
-      setReviewSuccess('Review submitted successfully!');
-      setComment('');
-      setRating(5);
-    } else {
-      setReviewError(err.response?.data?.message || 'Failed to submit review. Please try again.');
-    }
-    setTimeout(() => {
-      setReviewError('');
-      setReviewSuccess('');
-    }, 3000);
-  },
-});
-  
+      setTimeout(() => setReviewSuccess(''), 3000);
+    },
+    onError: (err: any) => {
+      setReviewError(err.response?.data?.message || 'Failed to submit review');
+      setTimeout(() => setReviewError(''), 3000);
+    },
+  });
+
   const handleSubmitReview = () => {
     if (!user) {
       router.push('/auth/login?redirect=/products/' + id);
@@ -128,7 +172,6 @@ export default function ProductDetailPage() {
     router.push('/checkout');
   };
 
-  // Calculate average rating
   const reviews = product.reviews || [];
   const averageRating = reviews.length > 0
     ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
@@ -168,10 +211,13 @@ export default function ProductDetailPage() {
           </div>
           <p className="text-gray-600 mb-4">{product.description}</p>
 
-          {/* Variants */}
+          {/* Size with Guide */}
           {product.attributes?.size?.length > 0 && (
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">Size</label>
+              <div className="flex items-center mb-2">
+                <label className="block text-sm font-medium">Size</label>
+                <SizeGuide />
+              </div>
               <div className="flex gap-2 flex-wrap">
                 {product.attributes.size.map((size: string) => (
                   <button
@@ -232,7 +278,6 @@ export default function ProductDetailPage() {
         </TabsContent>
         
         <TabsContent value="reviews" className="bg-white p-4 rounded-lg">
-          {/* Write a review section */}
           <div className="mb-8 pb-4 border-b">
             <h3 className="font-semibold text-lg mb-4">Write a Review</h3>
             {reviewError && (
@@ -278,7 +323,6 @@ export default function ProductDetailPage() {
             </Button>
           </div>
 
-          {/* Customer reviews list */}
           <h3 className="font-semibold text-lg mb-4">Customer Reviews</h3>
           {reviews.length === 0 ? (
             <p className="text-gray-500 text-center py-8">No reviews yet. Be the first to review this product!</p>
@@ -307,11 +351,6 @@ export default function ProductDetailPage() {
                     </span>
                   </div>
                   <p className="text-gray-600 text-sm mt-1">{review.comment}</p>
-                  <div className="flex items-center gap-4 mt-2">
-                    <button className="flex items-center gap-1 text-xs text-gray-400 hover:text-primary">
-                      <ThumbsUp className="h-3 w-3" /> Helpful (0)
-                    </button>
-                  </div>
                 </div>
               ))}
             </div>
