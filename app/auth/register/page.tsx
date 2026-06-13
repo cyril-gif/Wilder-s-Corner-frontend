@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Eye, EyeOff } from 'lucide-react';
 import useAuthStore from '@/store/authStore';
 
 const registerSchema = z.object({
@@ -27,6 +28,7 @@ function RegisterForm() {
   const redirect = searchParams.get('redirect') || '/';
   const { register: registerUser, isLoading } = useAuthStore();
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -56,7 +58,7 @@ function RegisterForm() {
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-card w-full max-w-md">
+    <div className="bg-white p-8 rounded-lg shadow-card w-full max-w-md mx-auto">
       <h1 className="text-2xl font-bold text-center mb-6">Create Account</h1>
       
       {error && (
@@ -97,11 +99,28 @@ function RegisterForm() {
           <Input id="email" type="email" {...register('email')} />
           {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
         </div>
+        
+        {/* Password field with eye icon */}
         <div>
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" {...register('password')} />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              {...register('password')}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
           {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
         </div>
+        
         <div>
           <Label htmlFor="phone">Phone (optional)</Label>
           <Input id="phone" type="tel" {...register('phone')} />
@@ -130,4 +149,3 @@ export default function RegisterPage() {
     </Suspense>
   );
 }
-
