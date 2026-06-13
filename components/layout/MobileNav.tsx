@@ -60,7 +60,7 @@ export default function MobileNav() {
                 />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800 text-sm">Pascal Lantam Gbate</h3>
+                <h3 className="font-bold text-gray-800 text-sm">Margaret Efia Essien</h3>
                 <p className="text-xs text-gray-500">Founder & CEO</p>
               </div>
             </div>
