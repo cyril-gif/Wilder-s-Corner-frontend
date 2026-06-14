@@ -179,43 +179,46 @@ export default function ProductDetailPage() {
   const addItem = useCartStore((state) => state.addItem);
 
   const submitReview = useMutation({
-    mutationFn: async () => {
-      if (!product?._id) throw new Error('Product ID not found');
-      const response = await axios.post(`/products/${product._id}/reviews`, {
-        rating,
-        comment,
+  mutationFn: async () => {
+    if (!product?._id) throw new Error('Product ID not found');
+    const response = await axios.post(`/products/${product._id}/reviews`, {
+      rating,
+      comment,
+    });
+    return response.data;
+  },
+  onSuccess: () => {
+    setReviewSuccess('Review submitted successfully!');
+    setComment('');
+    setRating(5);
+    setReviewError('');
+    // Invalidate the single product detail
+    queryClient.invalidateQueries({ queryKey: ['product', id] });
+    // Invalidate ALL product lists (homepage, category pages, etc.)
+    queryClient.invalidateQueries({
+      predicate: (query) => query.queryKey[0] === 'products',
+    });
+    setTimeout(() => setReviewSuccess(''), 3000);
+  },
+  onError: (err: any) => {
+    const errorMessage = err.response?.data?.message || '';
+    if (errorMessage.includes('validation failed') || errorMessage.includes('required')) {
+      // Even on error, refresh data (review may have been saved)
+      queryClient.invalidateQueries({ queryKey: ['product', id] });
+      queryClient.invalidateQueries({
+        predicate: (query) => query.queryKey[0] === 'products',
       });
-      return response.data;
-    },
-    onSuccess: () => {
-      setReviewSuccess('Review submitted successfully!');
+      setReviewSuccess('Thank you! Your review has been submitted.');
       setComment('');
       setRating(5);
       setReviewError('');
-      // Invalidate all product queries to refresh ratings everywhere
-      queryClient.invalidateQueries({ queryKey: ['product', id] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['category-products'] });
-      setTimeout(() => setReviewSuccess(''), 3000);
-    },
-    onError: (err: any) => {
-      const errorMessage = err.response?.data?.message || '';
-      if (errorMessage.includes('validation failed') || errorMessage.includes('required')) {
-        // Still refresh because the review might have been saved
-        queryClient.invalidateQueries({ queryKey: ['product', id] });
-        queryClient.invalidateQueries({ queryKey: ['products'] });
-        queryClient.invalidateQueries({ queryKey: ['category-products'] });
-        setReviewSuccess('Thank you! Your review has been submitted.');
-        setComment('');
-        setRating(5);
-        setReviewError('');
-        setTimeout(() => setReviewSuccess(''), 4000);
-      } else {
-        setReviewError(errorMessage || 'Failed to submit review. Please try again.');
-        setTimeout(() => setReviewError(''), 4000);
-      }
-    },
-  });
+      setTimeout(() => setReviewSuccess(''), 4000);
+    } else {
+      setReviewError(errorMessage || 'Failed to submit review. Please try again.');
+      setTimeout(() => setReviewError(''), 4000);
+    }
+  },
+});
 
   const handleSubmitReview = () => {
     if (!user) {
