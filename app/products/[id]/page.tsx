@@ -15,7 +15,9 @@ import useAuthStore from '@/store/authStore';
 import ProductGrid from '@/components/products/ProductGrid';
 import axios from '@/lib/api';
 
-// -------------------- Size Guide Component (fixed) --------------------
+// ------------------------------------------------------------
+// Size Guide component – Ghana market, type‑safe rendering
+// ------------------------------------------------------------
 function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
   const [showGuide, setShowGuide] = useState(false);
 
@@ -58,11 +60,19 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
       </button>
 
       {showGuide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowGuide(false)}>
-          <div className="bg-white rounded-lg p-5 max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setShowGuide(false)}
+        >
+          <div
+            className="bg-white rounded-lg p-5 max-w-md w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-primary">{chartTitle}</h3>
-              <button onClick={() => setShowGuide(false)} className="text-gray-500 hover:text-gray-700 text-xl">✕</button>
+              <button onClick={() => setShowGuide(false)} className="text-gray-500 hover:text-gray-700 text-xl">
+                ✕
+              </button>
             </div>
 
             {productSizes.length > 0 && (
@@ -70,7 +80,10 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
                 <p className="text-sm font-medium mb-2">Available Sizes:</p>
                 <div className="flex flex-wrap gap-2">
                   {productSizes.map((size) => (
-                    <span key={size} className="bg-white border border-primary rounded-full px-3 py-1 text-sm font-medium">
+                    <span
+                      key={size}
+                      className="bg-white border border-primary rounded-full px-3 py-1 text-sm font-medium"
+                    >
                       {size}
                     </span>
                   ))}
@@ -103,6 +116,7 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
                   {chartToShow.map((item, idx) => (
                     <tr key={idx} className="border-b hover:bg-gray-50">
                       {isShoeProduct ? (
+                        // TypeScript narrows correctly because we check isShoeProduct
                         <>
                           <td className="py-2 px-2 font-medium">{item.size}</td>
                           <td className="py-2 px-2">{item.uk}</td>
@@ -136,7 +150,9 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
   );
 }
 
-// -------------------- Main Product Detail Component --------------------
+// ------------------------------------------------------------
+// Main Product Detail Component
+// ------------------------------------------------------------
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -359,20 +375,10 @@ export default function ProductDetailPage() {
         </TabsContent>
         <TabsContent value="specifications" className="bg-white p-4 rounded-lg">
           <ul>
-            <li>
-              <strong>Brand:</strong> {product.brand || 'N/A'}
-            </li>
-            <li>
-              <strong>Category:</strong> {product.category?.name}
-            </li>
-            <li>
-              <strong>Material:</strong> {product.attributes?.material || 'N/A'}
-            </li>
-            {productSizes.length > 0 && (
-              <li>
-                <strong>Sizes:</strong> {productSizes.join(', ')}
-              </li>
-            )}
+            <li><strong>Brand:</strong> {product.brand || 'N/A'}</li>
+            <li><strong>Category:</strong> {product.category?.name}</li>
+            <li><strong>Material:</strong> {product.attributes?.material || 'N/A'}</li>
+            {productSizes.length > 0 && <li><strong>Sizes:</strong> {productSizes.join(', ')}</li>}
           </ul>
         </TabsContent>
         <TabsContent value="reviews" className="bg-white p-4 rounded-lg">
@@ -384,15 +390,8 @@ export default function ProductDetailPage() {
               <Label className="block mb-2">Your Rating</Label>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setRating(star)}
-                    className="focus:outline-none"
-                  >
-                    <Star
-                      className={`h-6 w-6 ${star <= rating ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'}`}
-                    />
+                  <button key={star} type="button" onClick={() => setRating(star)} className="focus:outline-none">
+                    <Star className={`h-6 w-6 ${star <= rating ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'}`} />
                   </button>
                 ))}
               </div>
