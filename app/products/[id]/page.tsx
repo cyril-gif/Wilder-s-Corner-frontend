@@ -1,34 +1,36 @@
-'use client';
-
-import { useParams, useRouter } from 'next/navigation';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchProductById } from '@/lib/api';
-import Image from 'next/image';
-import { useState } from 'react';
-import { Star, ShoppingCart, Minus, Plus, MessageSquare, ThumbsUp, HelpCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import useCartStore from '@/store/cartStore';
-import useAuthStore from '@/store/authStore';
-import ProductGrid from '@/components/products/ProductGrid';
-import axios from '@/lib/api';
-
-// Size guide component
-function SizeGuide() {
+// Size guide component - Ghana market only
+function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
   const [showGuide, setShowGuide] = useState(false);
   
-  const sizeChart = [
-    { us: 'US 5', uk: 'UK 3', eu: 'EU 35', foot: '22.5 cm' },
-    { us: 'US 6', uk: 'UK 4', eu: 'EU 36', foot: '23.5 cm' },
-    { us: 'US 7', uk: 'UK 5', eu: 'EU 37', foot: '24.5 cm' },
-    { us: 'US 8', uk: 'UK 6', eu: 'EU 38', foot: '25.5 cm' },
-    { us: 'US 9', uk: 'UK 7', eu: 'EU 39', foot: '26.5 cm' },
-    { us: 'US 10', uk: 'UK 8', eu: 'EU 40', foot: '27.5 cm' },
-    { us: 'US 11', uk: 'UK 9', eu: 'EU 41', foot: '28.5 cm' },
-    { us: 'US 12', uk: 'UK 10', eu: 'EU 42', foot: '29.5 cm' },
+  // Ghana shoe size chart (UK/European sizes only)
+  const shoeSizeChart = [
+    { size: '36', uk: 'UK 3', foot: '22.5 cm', fit: 'Small' },
+    { size: '37', uk: 'UK 4', foot: '23.5 cm', fit: 'Small' },
+    { size: '38', uk: 'UK 5', foot: '24.5 cm', fit: 'Medium' },
+    { size: '39', uk: 'UK 6', foot: '25.5 cm', fit: 'Medium' },
+    { size: '40', uk: 'UK 7', foot: '26.5 cm', fit: 'Large' },
+    { size: '41', uk: 'UK 8', foot: '27.5 cm', fit: 'Large' },
+    { size: '42', uk: 'UK 9', foot: '28.5 cm', fit: 'X-Large' },
+    { size: '43', uk: 'UK 10', foot: '29.5 cm', fit: 'X-Large' },
+    { size: '44', uk: 'UK 11', foot: '30.5 cm', fit: 'XX-Large' },
+    { size: '45', uk: 'UK 12', foot: '31.5 cm', fit: 'XX-Large' },
   ];
+
+  // Ghana clothing size chart (African fit)
+  const clothingChart = [
+    { size: 'S', chest: '34-36 in', waist: '28-30 in', description: 'Small - Fits slim build' },
+    { size: 'M', chest: '38-40 in', waist: '32-34 in', description: 'Medium - Average build' },
+    { size: 'L', chest: '42-44 in', waist: '36-38 in', description: 'Large - Slightly bigger build' },
+    { size: 'XL', chest: '46-48 in', waist: '40-42 in', description: 'Extra Large - Big build' },
+    { size: 'XXL', chest: '50-52 in', waist: '44-46 in', description: 'Double Extra Large' },
+    { size: '3XL', chest: '54-56 in', waist: '48-50 in', description: 'Triple Extra Large' },
+    { size: '4XL', chest: '58-60 in', waist: '52-54 in', description: '4X Large' },
+  ];
+
+  // Check if sizes are numbers (shoe sizes)
+  const isShoeProduct = productSizes.some(size => /^\d+$/.test(size));
+  const chartToShow = isShoeProduct ? shoeSizeChart : clothingChart;
+  const chartTitle = isShoeProduct ? 'Shoe Size Guide' : 'Clothing Size Guide';
 
   return (
     <>
@@ -38,328 +40,87 @@ function SizeGuide() {
         type="button"
       >
         <HelpCircle className="h-3 w-3" />
-        Size Guide
+        Size Guide (Ghana)
       </button>
       
       {showGuide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowGuide(false)}>
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowGuide(false)}>
+          <div className="bg-white rounded-lg p-5 max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold">Shoe Size Guide</h3>
-              <button onClick={() => setShowGuide(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+              <h3 className="text-lg font-bold text-primary">{chartTitle}</h3>
+              <button onClick={() => setShowGuide(false)} className="text-gray-500 hover:text-gray-700 text-xl">✕</button>
             </div>
+            
+            {/* Available sizes for this product */}
+            {productSizes.length > 0 && (
+              <div className="mb-4 p-3 bg-orange-50 rounded-lg">
+                <p className="text-sm font-medium mb-2">Available Sizes:</p>
+                <div className="flex flex-wrap gap-2">
+                  {productSizes.map((size) => (
+                    <span key={size} className="bg-white border border-primary rounded-full px-3 py-1 text-sm font-medium">
+                      {size}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Size Chart */}
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2">US</th>
-                    <th className="text-left py-2">UK</th>
-                    <th className="text-left py-2">EU</th>
-                    <th className="text-left py-2">Foot Length</th>
+                  <tr className="border-b bg-gray-50">
+                    {isShoeProduct ? (
+                      <>
+                        <th className="text-left py-2 px-2">Size</th>
+                        <th className="text-left py-2 px-2">UK</th>
+                        <th className="text-left py-2 px-2">Foot Length</th>
+                        <th className="text-left py-2 px-2">Fit</th>
+                      </>
+                    ) : (
+                      <>
+                        <th className="text-left py-2 px-2">Size</th>
+                        <th className="text-left py-2 px-2">Chest</th>
+                        <th className="text-left py-2 px-2">Waist</th>
+                        <th className="text-left py-2 px-2">Description</th>
+                      </>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
-                  {sizeChart.map((size, idx) => (
-                    <tr key={idx} className="border-b">
-                      <td className="py-2">{size.us}</td>
-                      <td className="py-2">{size.uk}</td>
-                      <td className="py-2">{size.eu}</td>
-                      <td className="py-2">{size.foot}</td>
+                  {chartToShow.map((item, idx) => (
+                    <tr key={idx} className="border-b hover:bg-gray-50">
+                      {isShoeProduct ? (
+                        <>
+                          <td className="py-2 px-2 font-medium">{(item as any).size}</td>
+                          <td className="py-2 px-2">{(item as any).uk}</td>
+                          <td className="py-2 px-2">{(item as any).foot}</td>
+                          <td className="py-2 px-2 text-green-600">{(item as any).fit}</td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="py-2 px-2 font-medium">{(item as any).size}</td>
+                          <td className="py-2 px-2">{(item as any).chest}</td>
+                          <td className="py-2 px-2">{(item as any).waist}</td>
+                          <td className="py-2 px-2 text-xs">{(item as any).description}</td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="text-xs text-gray-500 mt-4">How to measure: Stand on a ruler, measure from heel to longest toe.</p>
+            
+            {/* Ghana-specific tips */}
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs">
+              <p className="font-medium mb-1 flex items-center gap-1">🇬🇭 Ghana Size Tips:</p>
+              <p className="text-gray-600">• Our sizes are UK/European standard – widely used in Ghana</p>
+              <p className="text-gray-600">• If between sizes, choose the larger size for better comfort</p>
+              <p className="text-gray-600">• Need help? Call us on 027 180 8592 for size assistance</p>
+            </div>
           </div>
         </div>
       )}
     </>
-  );
-}
-
-export default function ProductDetailPage() {
-  const { id } = useParams();
-  const router = useRouter();
-  const { user } = useAuthStore();
-  const queryClient = useQueryClient();
-  
-  const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState('');
-  const [reviewError, setReviewError] = useState('');
-  const [reviewSuccess, setReviewSuccess] = useState('');
-  const [submittingReview, setSubmittingReview] = useState(false);
-
-  const { data: product, isLoading, error } = useQuery({
-    queryKey: ['product', id],
-    queryFn: () => fetchProductById(id as string),
-  });
-
-  const addItem = useCartStore((state) => state.addItem);
-
-  const submitReview = useMutation({
-    mutationFn: async () => {
-      if (!product?._id) throw new Error('Product ID not found');
-      const response = await axios.post(`/products/${product._id}/reviews`, {
-        rating,
-        comment,
-      });
-      return response.data;
-    },
-    onSuccess: () => {
-      setReviewSuccess('Review submitted successfully!');
-      setComment('');
-      setRating(5);
-      setReviewError('');
-      queryClient.invalidateQueries({ queryKey: ['product', id] });
-      setTimeout(() => setReviewSuccess(''), 3000);
-    },
-    onError: (err: any) => {
-      setReviewError(err.response?.data?.message || 'Failed to submit review');
-      setTimeout(() => setReviewError(''), 3000);
-    },
-  });
-
-  const handleSubmitReview = () => {
-    if (!user) {
-      router.push('/auth/login?redirect=/products/' + id);
-      return;
-    }
-    if (!comment.trim()) {
-      setReviewError('Please write a comment');
-      return;
-    }
-    setSubmittingReview(true);
-    submitReview.mutate(undefined, {
-      onSettled: () => setSubmittingReview(false),
-    });
-  };
-
-  if (isLoading) return <div className="container mx-auto px-4 py-8">Loading product...</div>;
-  if (error || !product) return <div className="container mx-auto px-4 py-8">Product not found</div>;
-
-  const price = product.discountPrice || product.price;
-  const originalPrice = product.discountPrice ? product.price : null;
-
-  const handleAddToCart = () => {
-    addItem({
-      productId: product._id,
-      name: product.name,
-      price: price,
-      image: product.images[0],
-      qty: quantity,
-      size: selectedSize,
-      color: selectedColor,
-      stock: product.stock,
-    });
-    alert('Added to cart!');
-  };
-
-  const handleBuyNow = () => {
-    addItem({
-      productId: product._id,
-      name: product.name,
-      price: price,
-      image: product.images[0],
-      qty: quantity,
-      size: selectedSize,
-      color: selectedColor,
-      stock: product.stock,
-    });
-    router.push('/checkout');
-  };
-
-  const reviews = product.reviews || [];
-  const averageRating = reviews.length > 0
-    ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
-    : 0;
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid md:grid-cols-2 gap-8 mb-12">
-        {/* Image Gallery */}
-        <div>
-          <div className="relative h-96 bg-gray-100 rounded-lg overflow-hidden">
-            <Image src={product.images[0]} alt={product.name} fill className="object-cover" />
-          </div>
-          <div className="flex gap-2 mt-2">
-            {product.images.slice(1, 5).map((img: string, i: number) => (
-              <div key={i} className="relative h-20 w-20 bg-gray-100 rounded overflow-hidden cursor-pointer">
-                <Image src={img} alt={`${product.name} ${i+1}`} fill className="object-cover" />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Product Info */}
-        <div>
-          <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="flex text-yellow-500">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className={`h-4 w-4 ${i < Math.floor(averageRating) ? 'fill-current' : ''}`} />
-              ))}
-            </div>
-            <span className="text-sm text-gray-500">({reviews.length} reviews)</span>
-          </div>
-          <div className="mb-4">
-            <span className="text-3xl text-primary font-bold">₵{price.toLocaleString()}</span>
-            {originalPrice && <span className="text-lg text-gray-400 line-through ml-2">₵{originalPrice.toLocaleString()}</span>}
-          </div>
-          <p className="text-gray-600 mb-4">{product.description}</p>
-
-          {/* Size with Guide */}
-          {product.attributes?.size?.length > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center mb-2">
-                <label className="block text-sm font-medium">Size</label>
-                <SizeGuide />
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                {product.attributes.size.map((size: string) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`border rounded px-3 py-1 text-sm ${selectedSize === size ? 'border-primary bg-primary/10' : 'border-gray-300'}`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Quantity */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">Quantity</label>
-            <div className="flex items-center gap-3">
-              <button onClick={() => setQuantity(Math.max(1, quantity-1))} className="border rounded p-2"><Minus className="h-4 w-4" /></button>
-              <span className="w-12 text-center">{quantity}</span>
-              <button onClick={() => setQuantity(Math.min(product.stock, quantity+1))} className="border rounded p-2"><Plus className="h-4 w-4" /></button>
-              <span className="text-sm text-gray-500">{product.stock} in stock</span>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <Button onClick={handleAddToCart} className="bg-primary hover:bg-primary/90 flex-1">
-              <ShoppingCart className="h-4 w-4 mr-2" /> Add to Cart
-            </Button>
-            <Button onClick={handleBuyNow} variant="outline" className="flex-1">
-              Buy Now
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs with Reviews */}
-      <Tabs defaultValue="description" className="mb-12">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="description">Description</TabsTrigger>
-          <TabsTrigger value="specifications">Specifications</TabsTrigger>
-          <TabsTrigger value="reviews" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Reviews ({reviews.length})
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="description" className="bg-white p-4 rounded-lg">
-          {product.description}
-        </TabsContent>
-        
-        <TabsContent value="specifications" className="bg-white p-4 rounded-lg">
-          <ul>
-            <li><strong>Brand:</strong> {product.brand || 'N/A'}</li>
-            <li><strong>Category:</strong> {product.category?.name}</li>
-            <li><strong>Material:</strong> {product.attributes?.material || 'N/A'}</li>
-          </ul>
-        </TabsContent>
-        
-        <TabsContent value="reviews" className="bg-white p-4 rounded-lg">
-          <div className="mb-8 pb-4 border-b">
-            <h3 className="font-semibold text-lg mb-4">Write a Review</h3>
-            {reviewError && (
-              <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">
-                {reviewError}
-              </div>
-            )}
-            {reviewSuccess && (
-              <div className="bg-green-100 text-green-700 p-3 rounded mb-4 text-sm">
-                {reviewSuccess}
-              </div>
-            )}
-            <div className="mb-3">
-              <Label className="block mb-2">Your Rating</Label>
-              <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setRating(star)}
-                    className="focus:outline-none"
-                  >
-                    <Star className={`h-6 w-6 ${star <= rating ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'}`} />
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="mb-3">
-              <Label className="block mb-2">Your Review</Label>
-              <Textarea
-                placeholder="Share your experience with this product..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                rows={4}
-              />
-            </div>
-            <Button
-              onClick={handleSubmitReview}
-              disabled={submittingReview}
-              className="bg-primary"
-            >
-              {submittingReview ? 'Submitting...' : 'Submit Review'}
-            </Button>
-          </div>
-
-          <h3 className="font-semibold text-lg mb-4">Customer Reviews</h3>
-          {reviews.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No reviews yet. Be the first to review this product!</p>
-          ) : (
-            <div className="space-y-4">
-              {reviews.map((review: any) => (
-                <div key={review._id} className="border-b pb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                        <span className="text-primary font-bold text-sm">
-                          {review.user?.name?.charAt(0).toUpperCase() || 'U'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="font-medium">{review.user?.name || 'Anonymous'}</span>
-                        <div className="flex text-yellow-500 text-sm">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'fill-current' : ''}`} />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-xs text-gray-400">
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <p className="text-gray-600 text-sm mt-1">{review.comment}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      {/* Related Products */}
-      <ProductGrid title="Related Products" filter={{ category: product.category?._id, limit: 4 }} limit={4} />
-    </div>
   );
 }
