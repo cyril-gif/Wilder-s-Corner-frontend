@@ -15,10 +15,10 @@ import useAuthStore from '@/store/authStore';
 import ProductGrid from '@/components/products/ProductGrid';
 import axios from '@/lib/api';
 
-// Size guide component - Ghana market only (JSX fixed)
+// -------------------- Size Guide Component (fixed) --------------------
 function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
   const [showGuide, setShowGuide] = useState(false);
-  
+
   const shoeSizeChart = [
     { size: '36', uk: 'UK 3', foot: '22.5 cm', fit: 'Small' },
     { size: '37', uk: 'UK 4', foot: '23.5 cm', fit: 'Small' },
@@ -56,7 +56,7 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
         <HelpCircle className="h-3 w-3" />
         Size Guide (Ghana)
       </button>
-      
+
       {showGuide && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowGuide(false)}>
           <div className="bg-white rounded-lg p-5 max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -64,7 +64,7 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
               <h3 className="text-lg font-bold text-primary">{chartTitle}</h3>
               <button onClick={() => setShowGuide(false)} className="text-gray-500 hover:text-gray-700 text-xl">✕</button>
             </div>
-            
+
             {productSizes.length > 0 && (
               <div className="mb-4 p-3 bg-orange-50 rounded-lg">
                 <p className="text-sm font-medium mb-2">Available Sizes:</p>
@@ -77,7 +77,7 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
                 </div>
               </div>
             )}
-            
+
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -97,7 +97,7 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
                         <th className="text-left py-2 px-2">Description</th>
                       </>
                     )}
-                  <tr>
+                  </tr>
                 </thead>
                 <tbody>
                   {chartToShow.map((item, idx) => (
@@ -122,7 +122,7 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
                 </tbody>
               </table>
             </div>
-            
+
             <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs">
               <p className="font-medium mb-1 flex items-center gap-1">🇬🇭 Ghana Size Tips:</p>
               <p className="text-gray-600">• Our sizes are UK/European standard – widely used in Ghana</p>
@@ -136,12 +136,13 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
   );
 }
 
+// -------------------- Main Product Detail Component --------------------
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
-  
+
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -172,6 +173,7 @@ export default function ProductDetailPage() {
       setComment('');
       setRating(5);
       setReviewError('');
+      // Invalidate all product queries to refresh ratings everywhere
       queryClient.invalidateQueries({ queryKey: ['product', id] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['category-products'] });
@@ -180,6 +182,7 @@ export default function ProductDetailPage() {
     onError: (err: any) => {
       const errorMessage = err.response?.data?.message || '';
       if (errorMessage.includes('validation failed') || errorMessage.includes('required')) {
+        // Still refresh because the review might have been saved
         queryClient.invalidateQueries({ queryKey: ['product', id] });
         queryClient.invalidateQueries({ queryKey: ['products'] });
         queryClient.invalidateQueries({ queryKey: ['category-products'] });
@@ -254,9 +257,8 @@ export default function ProductDetailPage() {
   };
 
   const reviews = product.reviews || [];
-  const averageRating = reviews.length > 0
-    ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
-    : 0;
+  const averageRating =
+    reviews.length > 0 ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length : 0;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -269,7 +271,7 @@ export default function ProductDetailPage() {
           <div className="flex gap-2 mt-2">
             {product.images.slice(1, 5).map((img: string, i: number) => (
               <div key={i} className="relative h-20 w-20 bg-gray-100 rounded overflow-hidden cursor-pointer">
-                <Image src={img} alt={`${product.name} ${i+1}`} fill className="object-cover" />
+                <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-cover" />
               </div>
             ))}
           </div>
@@ -303,7 +305,11 @@ export default function ProductDetailPage() {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`border rounded px-3 py-1 text-sm ${selectedSize === size ? 'border-primary bg-primary/10 text-primary' : 'border-gray-300 hover:border-primary'}`}
+                    className={`border rounded px-3 py-1 text-sm ${
+                      selectedSize === size
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-gray-300 hover:border-primary'
+                    }`}
                   >
                     {size}
                   </button>
@@ -318,9 +324,13 @@ export default function ProductDetailPage() {
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2">Quantity</label>
             <div className="flex items-center gap-3">
-              <button onClick={() => setQuantity(Math.max(1, quantity-1))} className="border rounded p-2"><Minus className="h-4 w-4" /></button>
+              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="border rounded p-2">
+                <Minus className="h-4 w-4" />
+              </button>
               <span className="w-12 text-center">{quantity}</span>
-              <button onClick={() => setQuantity(Math.min(product.stock, quantity+1))} className="border rounded p-2"><Plus className="h-4 w-4" /></button>
+              <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} className="border rounded p-2">
+                <Plus className="h-4 w-4" />
+              </button>
               <span className="text-sm text-gray-500">{product.stock} in stock</span>
             </div>
           </div>
@@ -341,39 +351,35 @@ export default function ProductDetailPage() {
           <TabsTrigger value="description">Description</TabsTrigger>
           <TabsTrigger value="specifications">Specifications</TabsTrigger>
           <TabsTrigger value="reviews" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Reviews ({reviews.length})
+            <MessageSquare className="h-4 w-4" /> Reviews ({reviews.length})
           </TabsTrigger>
         </TabsList>
-        
         <TabsContent value="description" className="bg-white p-4 rounded-lg">
           {product.description}
         </TabsContent>
-        
         <TabsContent value="specifications" className="bg-white p-4 rounded-lg">
           <ul>
-            <li><strong>Brand:</strong> {product.brand || 'N/A'}</li>
-            <li><strong>Category:</strong> {product.category?.name}</li>
-            <li><strong>Material:</strong> {product.attributes?.material || 'N/A'}</li>
+            <li>
+              <strong>Brand:</strong> {product.brand || 'N/A'}
+            </li>
+            <li>
+              <strong>Category:</strong> {product.category?.name}
+            </li>
+            <li>
+              <strong>Material:</strong> {product.attributes?.material || 'N/A'}
+            </li>
             {productSizes.length > 0 && (
-              <li><strong>Sizes:</strong> {productSizes.join(', ')}</li>
+              <li>
+                <strong>Sizes:</strong> {productSizes.join(', ')}
+              </li>
             )}
           </ul>
         </TabsContent>
-        
         <TabsContent value="reviews" className="bg-white p-4 rounded-lg">
           <div className="mb-8 pb-4 border-b">
             <h3 className="font-semibold text-lg mb-4">Write a Review</h3>
-            {reviewError && (
-              <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">
-                {reviewError}
-              </div>
-            )}
-            {reviewSuccess && (
-              <div className="bg-green-100 text-green-700 p-3 rounded mb-4 text-sm">
-                {reviewSuccess}
-              </div>
-            )}
+            {reviewError && <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">{reviewError}</div>}
+            {reviewSuccess && <div className="bg-green-100 text-green-700 p-3 rounded mb-4 text-sm">{reviewSuccess}</div>}
             <div className="mb-3">
               <Label className="block mb-2">Your Rating</Label>
               <div className="flex gap-1">
@@ -384,7 +390,9 @@ export default function ProductDetailPage() {
                     onClick={() => setRating(star)}
                     className="focus:outline-none"
                   >
-                    <Star className={`h-6 w-6 ${star <= rating ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'}`} />
+                    <Star
+                      className={`h-6 w-6 ${star <= rating ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'}`}
+                    />
                   </button>
                 ))}
               </div>
@@ -398,15 +406,10 @@ export default function ProductDetailPage() {
                 rows={4}
               />
             </div>
-            <Button
-              onClick={handleSubmitReview}
-              disabled={submittingReview}
-              className="bg-primary"
-            >
+            <Button onClick={handleSubmitReview} disabled={submittingReview} className="bg-primary">
               {submittingReview ? 'Submitting...' : 'Submit Review'}
             </Button>
           </div>
-
           <h3 className="font-semibold text-lg mb-4">Customer Reviews</h3>
           {reviews.length === 0 ? (
             <p className="text-gray-500 text-center py-8">No reviews yet. Be the first to review this product!</p>
@@ -430,9 +433,7 @@ export default function ProductDetailPage() {
                         </div>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-400">
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </span>
+                    <span className="text-xs text-gray-400">{new Date(review.createdAt).toLocaleDateString()}</span>
                   </div>
                   <p className="text-gray-600 text-sm mt-1">{review.comment}</p>
                 </div>
