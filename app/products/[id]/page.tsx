@@ -15,7 +15,7 @@ import useAuthStore from '@/store/authStore';
 import ProductGrid from '@/components/products/ProductGrid';
 import axios from '@/lib/api';
 
-// Size guide component - Ghana market only
+// Size guide component - Ghana market only (JSX fixed)
 function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
   const [showGuide, setShowGuide] = useState(false);
   
@@ -97,24 +97,24 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
                         <th className="text-left py-2 px-2">Description</th>
                       </>
                     )}
-                  </td>
+                  <tr>
                 </thead>
                 <tbody>
                   {chartToShow.map((item, idx) => (
                     <tr key={idx} className="border-b hover:bg-gray-50">
                       {isShoeProduct ? (
                         <>
-                          <td className="py-2 px-2 font-medium">{(item as any).size}</td>
-                          <td className="py-2 px-2">{(item as any).uk}</td>
-                          <td className="py-2 px-2">{(item as any).foot}</td>
-                          <td className="py-2 px-2 text-green-600">{(item as any).fit}</td>
+                          <td className="py-2 px-2 font-medium">{item.size}</td>
+                          <td className="py-2 px-2">{item.uk}</td>
+                          <td className="py-2 px-2">{item.foot}</td>
+                          <td className="py-2 px-2 text-green-600">{item.fit}</td>
                         </>
                       ) : (
                         <>
-                          <td className="py-2 px-2 font-medium">{(item as any).size}</td>
-                          <td className="py-2 px-2">{(item as any).chest}</td>
-                          <td className="py-2 px-2">{(item as any).waist}</td>
-                          <td className="py-2 px-2 text-xs">{(item as any).description}</td>
+                          <td className="py-2 px-2 font-medium">{item.size}</td>
+                          <td className="py-2 px-2">{item.chest}</td>
+                          <td className="py-2 px-2">{item.waist}</td>
+                          <td className="py-2 px-2 text-xs">{item.description}</td>
                         </>
                       )}
                     </tr>
@@ -172,7 +172,6 @@ export default function ProductDetailPage() {
       setComment('');
       setRating(5);
       setReviewError('');
-      // Invalidate both the single product AND all product lists
       queryClient.invalidateQueries({ queryKey: ['product', id] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['category-products'] });
@@ -180,9 +179,7 @@ export default function ProductDetailPage() {
     },
     onError: (err: any) => {
       const errorMessage = err.response?.data?.message || '';
-      // Even if there's a validation error, the review might have been created
       if (errorMessage.includes('validation failed') || errorMessage.includes('required')) {
-        // Still refresh the product and product lists
         queryClient.invalidateQueries({ queryKey: ['product', id] });
         queryClient.invalidateQueries({ queryKey: ['products'] });
         queryClient.invalidateQueries({ queryKey: ['category-products'] });
