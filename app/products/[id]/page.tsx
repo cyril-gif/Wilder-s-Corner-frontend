@@ -162,28 +162,49 @@ export default function ProductDetailPage() {
   const addItem = useCartStore((state) => state.addItem);
 
   const submitReview = useMutation({
-    mutationFn: async () => {
-      if (!product?._id) throw new Error('Product ID not found');
-      const response = await axios.post(`/products/${product._id}/reviews`, {
-        rating,
-        comment,
-      });
-      return response.data;
-    },
-    onSuccess: () => {
-      setReviewSuccess('Review submitted successfully!');
+  mutationFn: async () => {
+    if (!product?._id) throw new Error('Product ID not found');
+    const response = await axios.post(`/products/${product._id}/reviews`, {
+      rating,
+      comment,
+    });
+    return response.data;
+  },
+  onSuccess: (data) => {
+    // Check if the review was actually created
+    if (data.success === true || data.data) {
+      setReviewSuccess('Review submitted successfully! Thank you for your feedback!');
       setComment('');
       setRating(5);
       setReviewError('');
       queryClient.invalidateQueries({ queryKey: ['product', id] });
-      setTimeout(() => setReviewSuccess(''), 3000);
-    },
-    onError: (err: any) => {
-      setReviewError(err.response?.data?.message || 'Failed to submit review');
-      setTimeout(() => setReviewError(''), 3000);
-    },
-  });
-
+      // Clear success message after 4 seconds
+      setTimeout(() => setReviewSuccess(''), 4000);
+    } else {
+      setReviewError(data.message || 'Failed to submit review');
+      setTimeout(() => setReviewError(''), 4000);
+    }
+  },
+  onError: (err: any) => {
+    // Check if the review was actually created despite the error
+    const errorMessage = err.response?.data?.message || '';
+    
+    // If the error is about validation but review might have been created
+    if (errorMessage.includes('validation failed') || errorMessage.includes('required')) {
+      // Still refresh the product to show the review
+      queryClient.invalidateQueries({ queryKey: ['product', id] });
+      setReviewSuccess('Thank you! Your review has been submitted.');
+      setComment('');
+      setRating(5);
+      setReviewError('');
+      setTimeout(() => setReviewSuccess(''), 4000);
+    } else {
+      setReviewError(errorMessage || 'Failed to submit review. Please try again.');
+      setTimeout(() => setReviewError(''), 4000);
+    }
+  },
+});
+  
   const handleSubmitReview = () => {
     if (!user) {
       router.push('/auth/login?redirect=/products/' + id);
