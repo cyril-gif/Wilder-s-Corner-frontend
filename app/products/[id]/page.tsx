@@ -16,7 +16,7 @@ import ProductGrid from '@/components/products/ProductGrid';
 import axios from '@/lib/api';
 
 // ------------------------------------------------------------
-// Size Guide component – Ghana market, type‑safe rendering
+// Size Guide component – Ghana market, with type‑safe rendering
 // ------------------------------------------------------------
 function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
   const [showGuide, setShowGuide] = useState(false);
@@ -113,26 +113,29 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {chartToShow.map((item, idx) => (
-                    <tr key={idx} className="border-b hover:bg-gray-50">
-                      {isShoeProduct ? (
-                        // TypeScript narrows correctly because we check isShoeProduct
-                        <>
-                          <td className="py-2 px-2 font-medium">{item.size}</td>
-                          <td className="py-2 px-2">{item.uk}</td>
-                          <td className="py-2 px-2">{item.foot}</td>
-                          <td className="py-2 px-2 text-green-600">{item.fit}</td>
-                        </>
-                      ) : (
-                        <>
-                          <td className="py-2 px-2 font-medium">{item.size}</td>
-                          <td className="py-2 px-2">{item.chest}</td>
-                          <td className="py-2 px-2">{item.waist}</td>
-                          <td className="py-2 px-2 text-xs">{item.description}</td>
-                        </>
-                      )}
-                    </tr>
-                  ))}
+                  {chartToShow.map((item, idx) => {
+                    if (isShoeProduct) {
+                      const shoeItem = item as any;
+                      return (
+                        <tr key={idx} className="border-b hover:bg-gray-50">
+                          <td className="py-2 px-2 font-medium">{shoeItem.size}</td>
+                          <td className="py-2 px-2">{shoeItem.uk}</td>
+                          <td className="py-2 px-2">{shoeItem.foot}</td>
+                          <td className="py-2 px-2 text-green-600">{shoeItem.fit}</td>
+                        </tr>
+                      );
+                    } else {
+                      const clothingItem = item as any;
+                      return (
+                        <tr key={idx} className="border-b hover:bg-gray-50">
+                          <td className="py-2 px-2 font-medium">{clothingItem.size}</td>
+                          <td className="py-2 px-2">{clothingItem.chest}</td>
+                          <td className="py-2 px-2">{clothingItem.waist}</td>
+                          <td className="py-2 px-2 text-xs">{clothingItem.description}</td>
+                        </tr>
+                      );
+                    }
+                  })}
                 </tbody>
               </table>
             </div>
