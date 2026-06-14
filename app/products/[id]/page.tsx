@@ -19,7 +19,6 @@ import axios from '@/lib/api';
 function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
   const [showGuide, setShowGuide] = useState(false);
   
-  // Ghana shoe size chart (UK/European sizes only)
   const shoeSizeChart = [
     { size: '36', uk: 'UK 3', foot: '22.5 cm', fit: 'Small' },
     { size: '37', uk: 'UK 4', foot: '23.5 cm', fit: 'Small' },
@@ -33,7 +32,6 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
     { size: '45', uk: 'UK 12', foot: '31.5 cm', fit: 'XX-Large' },
   ];
 
-  // Ghana clothing size chart (African fit)
   const clothingChart = [
     { size: 'S', chest: '34-36 in', waist: '28-30 in', description: 'Small - Fits slim build' },
     { size: 'M', chest: '38-40 in', waist: '32-34 in', description: 'Medium - Average build' },
@@ -44,7 +42,6 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
     { size: '4XL', chest: '58-60 in', waist: '52-54 in', description: '4X Large' },
   ];
 
-  // Check if sizes are numbers (shoe sizes)
   const isShoeProduct = productSizes.some(size => /^\d+$/.test(size));
   const chartToShow = isShoeProduct ? shoeSizeChart : clothingChart;
   const chartTitle = isShoeProduct ? 'Shoe Size Guide' : 'Clothing Size Guide';
@@ -100,7 +97,7 @@ function SizeGuide({ productSizes = [] }: { productSizes?: string[] }) {
                         <th className="text-left py-2 px-2">Description</th>
                       </>
                     )}
-                  </tr>
+                  </td>
                 </thead>
                 <tbody>
                   {chartToShow.map((item, idx) => (
@@ -162,49 +159,45 @@ export default function ProductDetailPage() {
   const addItem = useCartStore((state) => state.addItem);
 
   const submitReview = useMutation({
-  mutationFn: async () => {
-    if (!product?._id) throw new Error('Product ID not found');
-    const response = await axios.post(`/products/${product._id}/reviews`, {
-      rating,
-      comment,
-    });
-    return response.data;
-  },
-  onSuccess: (data) => {
-    // Check if the review was actually created
-    if (data.success === true || data.data) {
-      setReviewSuccess('Review submitted successfully! Thank you for your feedback!');
+    mutationFn: async () => {
+      if (!product?._id) throw new Error('Product ID not found');
+      const response = await axios.post(`/products/${product._id}/reviews`, {
+        rating,
+        comment,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      setReviewSuccess('Review submitted successfully!');
       setComment('');
       setRating(5);
       setReviewError('');
+      // Invalidate both the single product AND all product lists
       queryClient.invalidateQueries({ queryKey: ['product', id] });
-      // Clear success message after 4 seconds
-      setTimeout(() => setReviewSuccess(''), 4000);
-    } else {
-      setReviewError(data.message || 'Failed to submit review');
-      setTimeout(() => setReviewError(''), 4000);
-    }
-  },
-  onError: (err: any) => {
-    // Check if the review was actually created despite the error
-    const errorMessage = err.response?.data?.message || '';
-    
-    // If the error is about validation but review might have been created
-    if (errorMessage.includes('validation failed') || errorMessage.includes('required')) {
-      // Still refresh the product to show the review
-      queryClient.invalidateQueries({ queryKey: ['product', id] });
-      setReviewSuccess('Thank you! Your review has been submitted.');
-      setComment('');
-      setRating(5);
-      setReviewError('');
-      setTimeout(() => setReviewSuccess(''), 4000);
-    } else {
-      setReviewError(errorMessage || 'Failed to submit review. Please try again.');
-      setTimeout(() => setReviewError(''), 4000);
-    }
-  },
-});
-  
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['category-products'] });
+      setTimeout(() => setReviewSuccess(''), 3000);
+    },
+    onError: (err: any) => {
+      const errorMessage = err.response?.data?.message || '';
+      // Even if there's a validation error, the review might have been created
+      if (errorMessage.includes('validation failed') || errorMessage.includes('required')) {
+        // Still refresh the product and product lists
+        queryClient.invalidateQueries({ queryKey: ['product', id] });
+        queryClient.invalidateQueries({ queryKey: ['products'] });
+        queryClient.invalidateQueries({ queryKey: ['category-products'] });
+        setReviewSuccess('Thank you! Your review has been submitted.');
+        setComment('');
+        setRating(5);
+        setReviewError('');
+        setTimeout(() => setReviewSuccess(''), 4000);
+      } else {
+        setReviewError(errorMessage || 'Failed to submit review. Please try again.');
+        setTimeout(() => setReviewError(''), 4000);
+      }
+    },
+  });
+
   const handleSubmitReview = () => {
     if (!user) {
       router.push('/auth/login?redirect=/products/' + id);
@@ -302,7 +295,6 @@ export default function ProductDetailPage() {
           </div>
           <p className="text-gray-600 mb-4">{product.description}</p>
 
-          {/* Size Selection with Guide */}
           {productSizes.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center mb-2">
@@ -326,7 +318,6 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          {/* Quantity */}
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2">Quantity</label>
             <div className="flex items-center gap-3">
@@ -348,7 +339,6 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Tabs with Reviews */}
       <Tabs defaultValue="description" className="mb-12">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="description">Description</TabsTrigger>
@@ -455,7 +445,6 @@ export default function ProductDetailPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Related Products */}
       <ProductGrid title="Related Products" filter={{ category: product.category?._id, limit: 4 }} limit={4} />
     </div>
   );
